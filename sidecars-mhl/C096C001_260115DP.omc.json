@@ -1,0 +1,136 @@
+{
+  "Asset": [
+    {
+      "schemaVersion": "https://movielabs.com/omc/json/schema/v2.8",
+      "entityType": "Asset",
+      "identifier": [
+        {
+          "identifierScope": "dwc:clip-uuid",
+          "identifierValue": "4e2fcc3c-9ce5-4f18-9403-8b352dc0cb3c"
+        },
+        {
+          "identifierScope": "dwc:source-filename",
+          "identifierValue": "C096C001_260115DP"
+        }
+      ],
+      "name": "C096C001_260115DP",
+      "description": "Ingested from C096CJZ0_2026-01-15_162249.mhl via mhl_walker",
+      "provenance": {
+        "CreatedBy": {
+          "identifier": [
+            {
+              "identifierScope": "dwc:email",
+              "identifierValue": "mhl-walker@the-dwc.com"
+            }
+          ]
+        },
+        "createdOn": "2026-04-20T20:25:32Z",
+        "reason": "MHL walk \u2014 no clip re-read"
+      },
+      "assetFC": {
+        "functionalType": "capture.ocf",
+        "functionalProperties": {
+          "customData": [
+            {
+              "domain": "dwc.sidecar.artifacts",
+              "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
+              "schema": "https://ns.the-dwc.com/sidecar/v0.1/artifacts.schema.json",
+              "value": [
+                {
+                  "id": "urn:uuid:8d362c15-1f26-40c1-a249-641389960e57",
+                  "role": "clip-integrity",
+                  "kind": "source-file",
+                  "path": "./1_OCF/1_VENICE/CCAM/C096CJZ0/Clip/C096C001_260115DP/C096C001_260115DP.mxf",
+                  "hash": {
+                    "alg": "xxh64",
+                    "value": "79ab7f87a4731dd7"
+                  }
+                },
+                {
+                  "id": "urn:uuid:27a22113-8349-4f68-8b1d-4f27e1c90499",
+                  "role": "integrity",
+                  "kind": "asc-mhl",
+                  "path": "./1_OCF/1_VENICE/CCAM/C096CJZ0/C096CJZ0_2026-01-15_162249.mhl",
+                  "mhlEntry": "Clip/C096C001_260115DP/C096C001_260115DP.mxf",
+                  "hash": {
+                    "alg": "sha256",
+                    "value": "06bb76f085ed6d8cb802619d76386e35321d7716e77112a715e08f4f0657c868"
+                  },
+                  "immutable": true
+                },
+                {
+                  "id": "urn:uuid:4789ba65-f597-4550-85c0-c462980a5a01",
+                  "role": "framing",
+                  "kind": "asc-fdl",
+                  "path": "./Colour-Information/FDL/sony_venice_6k-3to2-15x_239to1_00pct_v001.fdl",
+                  "hash": {
+                    "alg": "sha256",
+                    "value": "32b2204b73ffd966e935467b8e07fdbb017152cf6294fff7b9ac29c9a2307ead"
+                  }
+                }
+              ]
+            },
+            {
+              "domain": "dwc.sidecar.events",
+              "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
+              "schema": "https://ns.the-dwc.com/sidecar/v0.1/events.schema.json",
+              "value": [
+                {
+                  "seq": 1,
+                  "ts": "2026-04-20T20:25:32Z",
+                  "actor": {
+                    "id": "urn:email:mhl-walker@the-dwc.com",
+                    "role": "IngestService"
+                  },
+                  "tool": {
+                    "name": "mhl_walker.py",
+                    "version": "0.1"
+                  },
+                  "action": "create",
+                  "target": "urn:uuid:4e2fcc3c-9ce5-4f18-9403-8b352dc0cb3c",
+                  "prevHash": null,
+                  "hash": "sha256:d82e53520a6404ae61d100af1e684fc775628bf8cb8c0eb6d9cb1f234274a007",
+                  "sig": {
+                    "alg": "ed25519",
+                    "kid": "dwc-dit-01",
+                    "value": "oWa9LJIrqWwD9et5o5LriVIW9GtjGyDzaO/FP352o4DIqv4ui9NUpwTQ7Ct59hl7oLIMiEaP7u44bzfy8NrbCw=="
+                  }
+                }
+              ]
+            },
+            {
+              "domain": "dwc.sidecar.locks",
+              "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
+              "schema": "https://ns.the-dwc.com/sidecar/v0.1/locks.schema.json",
+              "value": []
+            }
+          ]
+        }
+      },
+      "AssetSC": {
+        "schemaVersion": "https://movielabs.com/omc/json/schema/v2.8",
+        "entityType": "AssetSC",
+        "identifier": [
+          {
+            "identifierScope": "dwc:clip-sc-uuid",
+            "identifierValue": "astsc-4e2fcc3c-9ce5-4f18-9403-8b352dc0cb3c"
+          }
+        ],
+        "structuralType": "digital.movingImage",
+        "structuralProperties": {
+          "linkset": {
+            "recordType": "item",
+            "mediaType": "application/mxf"
+          },
+          "fileDetails": {
+            "fileName": "C096C001_260115DP",
+            "filePath": "1_OCF/1_VENICE/CCAM/C096CJZ0/Clip/C096C001_260115DP/",
+            "fileExtension": "mxf",
+            "mediaType": "application/mxf"
+          },
+          "purpose": "general"
+        }
+      }
+    }
+  ]
+}

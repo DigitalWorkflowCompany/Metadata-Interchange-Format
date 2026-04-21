@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<aces:amf xmlns:aces="urn:ampas:aces:amf:v1.0">
+  <aces:clipId>A001_C042_0420AB</aces:clipId>
+  <aces:pipelineInfo>
+    <aces:description>Demo AMF for DWC sidecar validator</aces:description>
+  </aces:pipelineInfo>
+  <aces:inputTransform>
+    <aces:transformId>urn:ampas:aces:transformId:v1.5:IDT.ARRI.ALEXA35_LogC4.a1.v1</aces:transformId>
+  </aces:inputTransform>
+  <aces:outputTransform>
+    <aces:transformId>urn:ampas:aces:transformId:v1.5:ODT.Academy.Rec709.a1.1.0</aces:transformId>
+  </aces:outputTransform>
+</aces:amf>

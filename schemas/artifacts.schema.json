@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ns.the-dwc.com/sidecar/v0.1/artifacts.schema.json",
+  "title": "DWC Sidecar — Artifacts payload",
+  "description": "Array of references to external metadata files (MHL, AMF, FDL, Resolve exports, etc.) carried inside an OMC Asset's customData under domain 'dwc.sidecar.artifacts'.",
+
+  "type": "array",
+  "minItems": 1,
+  "items": { "$ref": "#/$defs/artifact" },
+
+  "$defs": {
+    "urn": {
+      "type": "string",
+      "pattern": "^urn:[a-z0-9][a-z0-9-]{0,31}:[^\\s]+$"
+    },
+
+    "hash": {
+      "type": "object",
+      "required": ["alg", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "alg": {
+          "type": "string",
+          "enum": ["c4", "xxh64", "xxh3", "md5", "sha1", "sha256", "sha512", "blake3"]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 8
+        }
+      }
+    },
+
+    "artifact": {
+      "type": "object",
+      "required": ["id", "role", "kind", "path", "hash"],
+      "additionalProperties": false,
+      "properties": {
+        "id":   { "$ref": "#/$defs/urn" },
+        "role": {
+          "type": "string",
+          "enum": [
+            "integrity",
+            "clip-integrity",
+            "color-pipeline",
+            "framing",
+            "edit-metadata",
+            "audio-metadata",
+            "vfx-pull",
+            "sound-report",
+            "camera-report"
+          ]
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "source-file",
+            "asc-mhl",
+            "amf",
+            "asc-fdl",
+            "cdl",
+            "resolve-export",
+            "avid-ale",
+            "cmx-edl",
+            "fcp-xml",
+            "otio",
+            "sound-report-csv"
+          ]
+        },
+        "subtype":   { "type": "string" },
+        "path":      { "type": "string", "minLength": 1 },
+        "mhlEntry":  { "type": "string" },
+        "hash":      { "$ref": "#/$defs/hash" },
+        "immutable": { "type": "boolean" }
+      },
+      "allOf": [
+        {
+          "if":   { "properties": { "kind": { "const": "asc-mhl" } } },
+          "then": { "required": ["mhlEntry"],
+                    "properties": { "immutable": { "const": true } } }
+        },
+        {
+          "if":   { "properties": { "kind": { "const": "resolve-export" } } },
+          "then": { "required": ["subtype"],
+                    "properties": { "subtype": {
+                      "enum": ["drt", "drx", "drp", "ale", "edl", "xml", "csv"] } } }
+        }
+      ]
+    }
+  }
+}

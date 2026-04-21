@@ -1,0 +1,26 @@
+{
+  "alg": "ed25519",
+  "keys": {
+    "dwc-dit-01": {
+      "publicKey": "2HuTrlgf01u0Emkr/VeiRU7BZnF2lWswgFKBWsOfhD8=",
+      "validFrom": "2026-01-01T00:00:00Z",
+      "validUntil": "2027-01-01T00:00:00Z",
+      "revokedAt": null,
+      "revocationReason": null
+    },
+    "dwc-color-01": {
+      "publicKey": "sqY2PVAjGOk1KzXG2EZ0rQ9SHKemS0G61motl6ktV/o=",
+      "validFrom": "2026-01-01T00:00:00Z",
+      "validUntil": "2027-01-01T00:00:00Z",
+      "revokedAt": null,
+      "revocationReason": null
+    },
+    "dwc-post-01": {
+      "publicKey": "hKoJX4yZeE0pf1w7w9VflXk+iKz8nrrPgAdJpZVUXkc=",
+      "validFrom": "2026-01-01T00:00:00Z",
+      "validUntil": "2027-01-01T00:00:00Z",
+      "revokedAt": null,
+      "revocationReason": null
+    }
+  }
+}

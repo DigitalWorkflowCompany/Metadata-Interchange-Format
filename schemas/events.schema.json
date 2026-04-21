@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ns.the-dwc.com/sidecar/v0.1/events.schema.json",
+  "title": "DWC Sidecar — Events (append-only provenance log)",
+  "description": "Hash-chained, signed event log. Carried inside an OMC Asset's customData under domain 'dwc.sidecar.events'. Chain integrity (prevHash linkage, seq monotonicity) is enforced outside JSON Schema; this schema only validates per-event shape.",
+
+  "type": "array",
+  "minItems": 1,
+  "items": { "$ref": "#/$defs/event" },
+
+  "$defs": {
+    "urn": {
+      "type": "string",
+      "pattern": "^urn:[a-z0-9][a-z0-9-]{0,31}:[^\\s]+$"
+    },
+
+    "chainHash": {
+      "type": "string",
+      "pattern": "^(sha256|sha512|blake3):[0-9a-f]{64,128}$"
+    },
+
+    "signature": {
+      "type": "object",
+      "required": ["alg", "kid", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "alg":   { "type": "string", "enum": ["ed25519", "ecdsa-p256", "rsa-pss"] },
+        "kid":   { "type": "string", "minLength": 1 },
+        "value": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "actor": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id":   { "$ref": "#/$defs/urn" },
+        "role": { "type": "string" }
+      }
+    },
+
+    "tool": {
+      "type": "object",
+      "required": ["name", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "name":    { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "event": {
+      "type": "object",
+      "required": ["seq", "ts", "actor", "tool", "action", "target", "prevHash", "hash", "sig"],
+      "additionalProperties": false,
+      "properties": {
+        "seq":      { "type": "integer", "minimum": 1 },
+        "ts":       { "type": "string", "format": "date-time" },
+        "actor":    { "$ref": "#/$defs/actor" },
+        "tool":     { "$ref": "#/$defs/tool" },
+        "action": {
+          "type": "string",
+          "enum": [
+            "create", "attach", "detach", "update",
+            "lock", "unlock",
+            "sign", "verify",
+            "supersede", "transfer"
+          ]
+        },
+        "target":   { "$ref": "#/$defs/urn" },
+        "prevHash": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/chainHash" }
+          ]
+        },
+        "hash":     { "$ref": "#/$defs/chainHash" },
+        "sig":      { "$ref": "#/$defs/signature" }
+      },
+      "allOf": [
+        {
+          "if":   { "properties": { "seq": { "const": 1 } } },
+          "then": { "properties": { "prevHash": { "type": "null" } } }
+        },
+        {
+          "if":   { "properties": { "seq": { "not": { "const": 1 } } } },
+          "then": { "properties": { "prevHash": { "$ref": "#/$defs/chainHash" } } }
+        }
+      ]
+    }
+  }
+}

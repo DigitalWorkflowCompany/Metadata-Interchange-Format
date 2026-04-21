@@ -1,0 +1,50 @@
+name: hosted-schema-drift
+
+# Fails the build if the schemas served at https://ns.the-dwc.com/sidecar/v0.1/
+# disagree with the ones in this repo. Tolerates 404 so the check is safe to run
+# before the Pages site is live.
+
+on:
+  pull_request:
+    paths:
+      - 'schemas/**'
+      - 'tools/publish-schemas/**'
+      - '.github/workflows/hosted-schema-drift.yml'
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Byte-compare hosted schemas against repo
+        run: |
+          python3 <<'PY'
+          import hashlib, sys, urllib.request, urllib.error
+          from pathlib import Path
+
+          BASE  = "https://ns.the-dwc.com/sidecar/v0.1"
+          FILES = ["artifacts.schema.json", "events.schema.json", "locks.schema.json"]
+          REPO  = Path("schemas")
+
+          fails = 0
+          for name in FILES:
+              local = (REPO / name).read_bytes()
+              lh    = hashlib.sha256(local).hexdigest()
+              try:
+                  with urllib.request.urlopen(f"{BASE}/{name}", timeout=15) as r:
+                      hosted = r.read()
+              except urllib.error.HTTPError as e:
+                  if e.code == 404:
+                      print(f"{name:30s} not yet hosted — skipping")
+                      continue
+                  raise
+              rh     = hashlib.sha256(hosted).hexdigest()
+              status = "OK" if lh == rh else "DRIFT"
+              print(f"{name:30s} local={lh[:12]} hosted={rh[:12]} {status}")
+              if lh != rh:
+                  fails += 1
+          sys.exit(fails)
+          PY

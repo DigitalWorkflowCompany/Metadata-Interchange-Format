@@ -1,0 +1,13 @@
+# ASC MHL v2 — minimal demo stub
+Version: 2.0.0
+MHLType: flat
+Creator:
+  Author: DWC DIT
+  Tool: Silverstack 8.4.1
+  HostName: dit-cart-01
+  CreationDate: 2026-04-20T09:12:00Z
+Hashes:
+  - File: Camera/A001/A001_C042_0420AB.ari
+    Size: 36
+    LastModificationDate: 2026-04-20T09:10:00Z
+    sha256: 9525c3f3efd6928935d2fcf336161bf0e0a0436ccd42e73c8f0df994ea00d16e

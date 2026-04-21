@@ -1,0 +1,556 @@
+{
+  "Asset": [
+    {
+      "schemaVersion": "https://movielabs.com/omc/json/schema/v2.8",
+      "entityType": "Asset",
+      "identifier": [
+        {
+          "identifierScope": "dwc:reel-uuid",
+          "identifierValue": "01901111-2222-3333-4444-555566667777"
+        }
+      ],
+      "name": "A001 \u2014 Day 1 Reel",
+      "description": "Asset Group bundling Day-1 clips from magazine A001",
+      "assetFC": {
+        "functionalType": "capture.roll"
+      },
+      "AssetSC": {
+        "schemaVersion": "https://movielabs.com/omc/json/schema/v2.8",
+        "entityType": "AssetSC",
+        "identifier": [
+          {
+            "identifierScope": "dwc:reel-sc-uuid",
+            "identifierValue": "astsc-reel-01901111"
+          }
+        ],
+        "structuralType": "assetGroup",
+        "structuralProperties": {
+          "assetGroup": {
+            "assetGroupType": "capture.roll",
+            "memberCount": 2
+          }
+        }
+      },
+      "Asset": [
+        {
+          "schemaVersion": "https://movielabs.com/omc/json/schema/v2.8",
+          "entityType": "Asset",
+          "identifier": [
+            {
+              "identifierScope": "dwc:clip-uuid",
+              "identifierValue": "0190a5e2-7c3f-7b4a-a1b2-3c4d5e6f7890"
+            },
+            {
+              "identifierScope": "dwc:source-filename",
+              "identifierValue": "A001_C042_0420AB"
+            },
+            {
+              "identifierScope": "dwc:c4id",
+              "identifierValue": "c43UBJUCtZzQ8u2rv2N2J2S7s8m7X7gk4qHqv1b5ap3xkKYcHqxWm3B1mTqY"
+            },
+            {
+              "identifierScope": "smpte:umid",
+              "identifierValue": "060A2B340101010501010D43130000009A8C2F5B0E1D4F6C8B7A6D5E4F3C2B1A"
+            }
+          ],
+          "name": "A001_C042_0420AB",
+          "description": "ARRI ALEXA 35 camera original, ARRIRAW, The Untitled Picture \u2014 S42/T3",
+          "provenance": {
+            "CreatedBy": {
+              "identifier": [
+                {
+                  "identifierScope": "dwc:email",
+                  "identifierValue": "dit@the-dwc.com"
+                }
+              ]
+            },
+            "Role": {
+              "identifier": [
+                {
+                  "identifierScope": "dwc:crew-role",
+                  "identifierValue": "DIT"
+                }
+              ]
+            },
+            "createdOn": "2026-04-20T09:12:00Z",
+            "reason": "Ingest from magazine A001 on-set cart",
+            "annotation": [
+              {
+                "author": "dit@the-dwc.com",
+                "title": "Ingest tool",
+                "text": "Silverstack 8.4.1; verified against camera-written MHL"
+              }
+            ]
+          },
+          "assetFC": {
+            "functionalType": "capture.ocf",
+            "functionalProperties": {
+              "cameraMetadata": {
+                "cameraMake": "ARRI",
+                "cameraModel": "ALEXA 35",
+                "cameraSerialNumber": "35-12345",
+                "cameraFirmwareVersion": "SUP 1.4.0",
+                "cameraLabel": "A",
+                "cameraRoll": "A001",
+                "reelName": "A001",
+                "captureRate": "23.976",
+                "playbackRate": "23.976",
+                "frameWidth": "4448",
+                "frameHeight": "3096",
+                "pixelAspectRatio": "1.0",
+                "exposureIndex": "800",
+                "isoSpeed": "800",
+                "whiteBalance": "5600",
+                "tint": "0.0",
+                "shutterAngle": "180",
+                "timecodeStart": "01:00:12:03",
+                "timecodeEnd": "01:00:18:17",
+                "circleTake": "true",
+                "fdlLink": "urn:uuid:af8a0003-0000-0000-0000-000000000003",
+                "lutUID": "ARRI.LogC4-to-Rec709.v1"
+              },
+              "lensMetadata": {
+                "lensMake": "Zeiss",
+                "lensModel": "Supreme Prime 35",
+                "lensSerialNumber": "SP-00421",
+                "focalLength": "35",
+                "tStop": "2.0"
+              },
+              "timing": {
+                "sourceStart": "01:00:12:03",
+                "sourceEnd": "01:00:18:17",
+                "recordStart": "01:00:12:03",
+                "recordEnd": "01:00:18:17"
+              },
+              "customData": [
+                {
+                  "domain": "dwc.sidecar.artifacts",
+                  "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
+                  "schema": "https://ns.the-dwc.com/sidecar/v0.1/artifacts.schema.json",
+                  "value": [
+                    {
+                      "id": "urn:uuid:af8a0001-0000-0000-0000-000000000001",
+                      "role": "integrity",
+                      "kind": "asc-mhl",
+                      "path": "./delivery/A001.mhl",
+                      "mhlEntry": "Camera/A001/A001_C042_0420AB.ari",
+                      "hash": {
+                        "alg": "sha256",
+                        "value": "746285cf7774d723f46593f146168426eb65b2ac169e67764fd65dcbe40e75d4"
+                      },
+                      "immutable": true
+                    },
+                    {
+                      "id": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
+                      "role": "color-pipeline",
+                      "kind": "amf",
+                      "path": "./amf/A001_C042_0420AB.amf",
+                      "hash": {
+                        "alg": "sha256",
+                        "value": "1001e48483ab149cd547e2f6b127a343f3c39be55d6476512261da2b9aa15f83"
+                      }
+                    },
+                    {
+                      "id": "urn:uuid:af8a0003-0000-0000-0000-000000000003",
+                      "role": "framing",
+                      "kind": "asc-fdl",
+                      "path": "./fdl/S042.fdl",
+                      "hash": {
+                        "alg": "sha256",
+                        "value": "e08a5551aefeaacd856ccc6c2762067b5d4c0531c253a63af0a47ac656a4ce0b"
+                      }
+                    },
+                    {
+                      "id": "urn:uuid:af8a0004-0000-0000-0000-000000000004",
+                      "role": "edit-metadata",
+                      "kind": "resolve-export",
+                      "subtype": "ale",
+                      "path": "./resolve/day01.ale",
+                      "hash": {
+                        "alg": "sha256",
+                        "value": "1099bef5325c7d63d71931c42ca6bc3ec5c3fd8eb53ad70e7d59907a7d136971"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "domain": "dwc.sidecar.events",
+                  "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
+                  "schema": "https://ns.the-dwc.com/sidecar/v0.1/events.schema.json",
+                  "value": [
+                    {
+                      "seq": 1,
+                      "ts": "2026-04-20T09:12:00Z",
+                      "actor": {
+                        "id": "urn:email:dit@the-dwc.com",
+                        "role": "DIT"
+                      },
+                      "tool": {
+                        "name": "Silverstack",
+                        "version": "8.4.1"
+                      },
+                      "action": "create",
+                      "target": "urn:uuid:0190a5e2-7c3f-7b4a-a1b2-3c4d5e6f7890",
+                      "prevHash": null,
+                      "hash": "sha256:d6a611309c41bd522985b9f251a526f7b4dd250d720b4a7097313282112583b9",
+                      "sig": {
+                        "alg": "ed25519",
+                        "kid": "dwc-dit-01",
+                        "value": "HgkHLKcrh/hihMRhKgo5yFa/SSO11tPUjX0/WEq6w0jtDRBksjDS+zUNOgDyS9/mz95ZoVutKhvuD189kO+CAw=="
+                      }
+                    },
+                    {
+                      "seq": 2,
+                      "ts": "2026-04-20T11:04:00Z",
+                      "actor": {
+                        "id": "urn:email:colorist@the-dwc.com",
+                        "role": "Colorist"
+                      },
+                      "tool": {
+                        "name": "DaVinci Resolve",
+                        "version": "20.1"
+                      },
+                      "action": "attach",
+                      "target": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
+                      "prevHash": "sha256:d6a611309c41bd522985b9f251a526f7b4dd250d720b4a7097313282112583b9",
+                      "hash": "sha256:4d7b69c551beeb22c31dc9c8dbc0822f3d9cddbb01dea86cd7e041c00cce56cf",
+                      "sig": {
+                        "alg": "ed25519",
+                        "kid": "dwc-color-01",
+                        "value": "/y7C9xNqwzFDesGZZZFeJV4hA6/Ftw22qTBphzsex8xe/fUD/q9+jZfR4w3CvkQHtzauAbm7Qs+rQj/mpga+DA=="
+                      }
+                    },
+                    {
+                      "seq": 3,
+                      "ts": "2026-04-20T18:00:00Z",
+                      "actor": {
+                        "id": "urn:email:post@the-dwc.com",
+                        "role": "PostSupervisor"
+                      },
+                      "tool": {
+                        "name": "Report-o-Tron",
+                        "version": "2.1"
+                      },
+                      "action": "lock",
+                      "target": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
+                      "prevHash": "sha256:4d7b69c551beeb22c31dc9c8dbc0822f3d9cddbb01dea86cd7e041c00cce56cf",
+                      "hash": "sha256:60aadd4ffa6e13fda98c409aeed0fb2c8378af1666a77880407d3c40224df62a",
+                      "sig": {
+                        "alg": "ed25519",
+                        "kid": "dwc-post-01",
+                        "value": "pSj0Cikr7WJdR/NT7wxnR6N4NejSkMH/k3HNT+no1FdKhY97cnLxsWiyf9n7Imh/EKOfXB2ck7zbBoHFTHcZDA=="
+                      }
+                    }
+                  ]
+                },
+                {
+                  "domain": "dwc.sidecar.locks",
+                  "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
+                  "schema": "https://ns.the-dwc.com/sidecar/v0.1/locks.schema.json",
+                  "value": [
+                    {
+                      "target": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
+                      "scope": "artifact",
+                      "by": "urn:email:post@the-dwc.com",
+                      "at": "2026-04-20T18:00:00Z",
+                      "reason": "Color intent approved for VFX pull; AMF frozen.",
+                      "sig": {
+                        "alg": "ed25519",
+                        "kid": "dwc-post-01",
+                        "value": "BASE64..."
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "AssetSC": {
+            "schemaVersion": "https://movielabs.com/omc/json/schema/v2.8",
+            "entityType": "AssetSC",
+            "identifier": [
+              {
+                "identifierScope": "dwc:clip-sc-uuid",
+                "identifierValue": "astsc-0190a5e2-7c3f-7b4a-a1b2-3c4d5e6f7890"
+              }
+            ],
+            "structuralType": "digital.imageSequence",
+            "structuralProperties": {
+              "codec": "ARRIRAW",
+              "linkset": {
+                "recordType": "item",
+                "mediaType": "image/x-arri-arriraw"
+              },
+              "fileDetails": {
+                "fileName": "A001_C042_0420AB",
+                "filePath": "Camera/A001/",
+                "fileExtension": "ari",
+                "mediaType": "image/x-arri-arriraw"
+              },
+              "purpose": "general"
+            }
+          }
+        },
+        {
+          "schemaVersion": "https://movielabs.com/omc/json/schema/v2.8",
+          "entityType": "Asset",
+          "identifier": [
+            {
+              "identifierScope": "dwc:clip-uuid",
+              "identifierValue": "0190a5e2-7c3f-7b4a-a1b2-3c4d5e6f7891"
+            },
+            {
+              "identifierScope": "dwc:source-filename",
+              "identifierValue": "A001_C043_0420CD"
+            },
+            {
+              "identifierScope": "dwc:c4id",
+              "identifierValue": "c4UNIQUEHASH_B_placeholder_64chars____________________________________________________"
+            },
+            {
+              "identifierScope": "smpte:umid",
+              "identifierValue": "060A2B340101010501010D43130000009A8C2F5B0E1D4F6C8B7A6D5E4F3C2B2B"
+            }
+          ],
+          "name": "A001_C043_0420CD",
+          "description": "ARRI ALEXA 35 camera original, ARRIRAW, The Untitled Picture \u2014 S42/T5",
+          "provenance": {
+            "CreatedBy": {
+              "identifier": [
+                {
+                  "identifierScope": "dwc:email",
+                  "identifierValue": "dit@the-dwc.com"
+                }
+              ]
+            },
+            "Role": {
+              "identifier": [
+                {
+                  "identifierScope": "dwc:crew-role",
+                  "identifierValue": "DIT"
+                }
+              ]
+            },
+            "createdOn": "2026-04-20T09:12:00Z",
+            "reason": "Ingest from magazine A001 on-set cart",
+            "annotation": [
+              {
+                "author": "dit@the-dwc.com",
+                "title": "Ingest tool",
+                "text": "Silverstack 8.4.1; verified against camera-written MHL"
+              }
+            ]
+          },
+          "assetFC": {
+            "functionalType": "capture.ocf",
+            "functionalProperties": {
+              "cameraMetadata": {
+                "cameraMake": "ARRI",
+                "cameraModel": "ALEXA 35",
+                "cameraSerialNumber": "35-12345",
+                "cameraFirmwareVersion": "SUP 1.4.0",
+                "cameraLabel": "A",
+                "cameraRoll": "A001",
+                "reelName": "A001",
+                "captureRate": "23.976",
+                "playbackRate": "23.976",
+                "frameWidth": "4448",
+                "frameHeight": "3096",
+                "pixelAspectRatio": "1.0",
+                "exposureIndex": "800",
+                "isoSpeed": "800",
+                "whiteBalance": "5600",
+                "tint": "0.0",
+                "shutterAngle": "180",
+                "timecodeStart": "01:00:25:00",
+                "timecodeEnd": "01:00:31:12",
+                "circleTake": "true",
+                "fdlLink": "urn:uuid:af8a0003-0000-0000-0000-000000000003",
+                "lutUID": "ARRI.LogC4-to-Rec709.v1"
+              },
+              "lensMetadata": {
+                "lensMake": "Zeiss",
+                "lensModel": "Supreme Prime 35",
+                "lensSerialNumber": "SP-00421",
+                "focalLength": "35",
+                "tStop": "2.0"
+              },
+              "timing": {
+                "sourceStart": "01:00:25:00",
+                "sourceEnd": "01:00:31:12",
+                "recordStart": "01:00:25:00",
+                "recordEnd": "01:00:31:12"
+              },
+              "customData": [
+                {
+                  "domain": "dwc.sidecar.artifacts",
+                  "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
+                  "schema": "https://ns.the-dwc.com/sidecar/v0.1/artifacts.schema.json",
+                  "value": [
+                    {
+                      "id": "urn:uuid:af8a0001-0000-0000-0000-000000000001",
+                      "role": "integrity",
+                      "kind": "asc-mhl",
+                      "path": "./delivery/A001.mhl",
+                      "mhlEntry": "Camera/A001/A001_C042_0420AB.ari",
+                      "hash": {
+                        "alg": "sha256",
+                        "value": "746285cf7774d723f46593f146168426eb65b2ac169e67764fd65dcbe40e75d4"
+                      },
+                      "immutable": true
+                    },
+                    {
+                      "id": "urn:uuid:af8a0002-0000-0000-0000-00000000002b",
+                      "role": "color-pipeline",
+                      "kind": "amf",
+                      "path": "./amf/A001_C043_0420CD.amf",
+                      "hash": {
+                        "alg": "sha256",
+                        "value": "852bd7d5160ee666e5bc1e9abc80e4066de2771654711068e313caa5614a8d3c"
+                      }
+                    },
+                    {
+                      "id": "urn:uuid:af8a0003-0000-0000-0000-000000000003",
+                      "role": "framing",
+                      "kind": "asc-fdl",
+                      "path": "./fdl/S042.fdl",
+                      "hash": {
+                        "alg": "sha256",
+                        "value": "e08a5551aefeaacd856ccc6c2762067b5d4c0531c253a63af0a47ac656a4ce0b"
+                      }
+                    },
+                    {
+                      "id": "urn:uuid:af8a0004-0000-0000-0000-000000000004",
+                      "role": "edit-metadata",
+                      "kind": "resolve-export",
+                      "subtype": "ale",
+                      "path": "./resolve/day01.ale",
+                      "hash": {
+                        "alg": "sha256",
+                        "value": "1099bef5325c7d63d71931c42ca6bc3ec5c3fd8eb53ad70e7d59907a7d136971"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "domain": "dwc.sidecar.events",
+                  "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
+                  "schema": "https://ns.the-dwc.com/sidecar/v0.1/events.schema.json",
+                  "value": [
+                    {
+                      "seq": 1,
+                      "ts": "2026-04-20T09:42:00Z",
+                      "actor": {
+                        "id": "urn:email:dit@the-dwc.com",
+                        "role": "DIT"
+                      },
+                      "tool": {
+                        "name": "Silverstack",
+                        "version": "8.4.1"
+                      },
+                      "action": "create",
+                      "target": "urn:uuid:0190a5e2-7c3f-7b4a-a1b2-3c4d5e6f7891",
+                      "prevHash": null,
+                      "hash": "sha256:3b1b4a017ef970e93b71afec9634eeff451fb14703733159e2492b24098ffef5",
+                      "sig": {
+                        "alg": "ed25519",
+                        "kid": "dwc-dit-01",
+                        "value": "wj4BmYNkfcDmkaw52p2HWFfrJcPMd18dUqSn69jbLwmKQgPrwcDffmugOfZJYAex2yh6IzQBgQTpHcTLiaZcCg=="
+                      }
+                    },
+                    {
+                      "seq": 2,
+                      "ts": "2026-04-20T11:34:00Z",
+                      "actor": {
+                        "id": "urn:email:colorist@the-dwc.com",
+                        "role": "Colorist"
+                      },
+                      "tool": {
+                        "name": "DaVinci Resolve",
+                        "version": "20.1"
+                      },
+                      "action": "attach",
+                      "target": "urn:uuid:af8a0002-0000-0000-0000-00000000002b",
+                      "prevHash": "sha256:3b1b4a017ef970e93b71afec9634eeff451fb14703733159e2492b24098ffef5",
+                      "hash": "sha256:ad7c44cad1ee3148335b9d709d643720de312db429bad6f0d308537fab60e840",
+                      "sig": {
+                        "alg": "ed25519",
+                        "kid": "dwc-color-01",
+                        "value": "IADfuHBfHfVUqKgTW1B9Kgs1lVMndszQNX/UH9RO9saqPfN64pJnwN/UR7EvVCUE7LSOZUv1apit/RVQuYESAQ=="
+                      }
+                    },
+                    {
+                      "seq": 3,
+                      "ts": "2026-04-20T18:30:00Z",
+                      "actor": {
+                        "id": "urn:email:post@the-dwc.com",
+                        "role": "PostSupervisor"
+                      },
+                      "tool": {
+                        "name": "Report-o-Tron",
+                        "version": "2.1"
+                      },
+                      "action": "lock",
+                      "target": "urn:uuid:af8a0002-0000-0000-0000-00000000002b",
+                      "prevHash": "sha256:ad7c44cad1ee3148335b9d709d643720de312db429bad6f0d308537fab60e840",
+                      "hash": "sha256:b7d0a2abc1cf84e26bde05f40816dd35b9e0bfb6f60335e7b0c4bd24984a066c",
+                      "sig": {
+                        "alg": "ed25519",
+                        "kid": "dwc-post-01",
+                        "value": "T29xgqXNdAF9ZKGsjI+IywOAHyayRXiAbfzcexECHMUaoV4F6qx2gAQMWDhQtfiV5N+bE4jS3vR+I8WyYGROAg=="
+                      }
+                    }
+                  ]
+                },
+                {
+                  "domain": "dwc.sidecar.locks",
+                  "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
+                  "schema": "https://ns.the-dwc.com/sidecar/v0.1/locks.schema.json",
+                  "value": [
+                    {
+                      "target": "urn:uuid:af8a0002-0000-0000-0000-00000000002b",
+                      "scope": "artifact",
+                      "by": "urn:email:post@the-dwc.com",
+                      "at": "2026-04-20T18:30:00Z",
+                      "reason": "Color intent approved for VFX pull; AMF frozen.",
+                      "sig": {
+                        "alg": "ed25519",
+                        "kid": "dwc-post-01",
+                        "value": "BASE64..."
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "AssetSC": {
+            "schemaVersion": "https://movielabs.com/omc/json/schema/v2.8",
+            "entityType": "AssetSC",
+            "identifier": [
+              {
+                "identifierScope": "dwc:clip-sc-uuid",
+                "identifierValue": "astsc-0190a5e2-7c3f-7b4a-a1b2-3c4d5e6f7891"
+              }
+            ],
+            "structuralType": "digital.imageSequence",
+            "structuralProperties": {
+              "codec": "ARRIRAW",
+              "linkset": {
+                "recordType": "item",
+                "mediaType": "image/x-arri-arriraw"
+              },
+              "fileDetails": {
+                "fileName": "A001_C043_0420CD",
+                "filePath": "Camera/A001/",
+                "fileExtension": "ari",
+                "mediaType": "image/x-arri-arriraw"
+              },
+              "purpose": "general"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

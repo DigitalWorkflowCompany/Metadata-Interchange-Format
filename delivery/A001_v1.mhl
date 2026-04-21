@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hashlist version="1.1" xmlns="urn:ASC:MHL:v1.1">
+  <creatorinfo>
+    <name>DWC DIT</name>
+    <tool>Silverstack 8.4.1</tool>
+    <startdate>2026-04-20T09:12:00Z</startdate>
+  </creatorinfo>
+  <hash>
+    <file>Camera/A001/A001_C042_0420AB.ari</file>
+    <size>36</size>
+    <lastmodificationdate>2026-04-20T09:10:00Z</lastmodificationdate>
+    <sha256>9525c3f3efd6928935d2fcf336161bf0e0a0436ccd42e73c8f0df994ea00d16e</sha256>
+    <hashdate>2026-04-20T09:12:01Z</hashdate>
+  </hash>
+</hashlist>

@@ -1,0 +1,27 @@
+{
+  "uuid": "af8a0003-0000-0000-0000-000000000003",
+  "version": {"major": 1, "minor": 0},
+  "fdl_creator": "DWC Demo",
+  "default_framing_intent_id": "center-2.39",
+  "framing_intents": [
+    {
+      "id": "center-2.39",
+      "label": "2.39:1 Centred",
+      "aspect_ratio": {"width": 239, "height": 100},
+      "protection": 0.0
+    }
+  ],
+  "canvases": [
+    {
+      "id": "alexa35-4.6k-3:2",
+      "label": "ALEXA 35 4.6K 3:2",
+      "source_canvas_id": "alexa35-4.6k-3:2",
+      "dimensions": {"width": 4448, "height": 3096},
+      "effective_dimensions": {"width": 4448, "height": 3096},
+      "effective_anchor_point": {"x": 0, "y": 0},
+      "photosite_dimensions": {"width": 4448, "height": 3096},
+      "physical_dimensions": {"width": 28.0, "height": 19.48},
+      "anamorphic_squeeze": 1.0
+    }
+  ]
+}
