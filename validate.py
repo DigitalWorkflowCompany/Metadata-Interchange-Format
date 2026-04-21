@@ -29,6 +29,8 @@ DWC_SCHEMAS = {
     "dwc.sidecar.locks":     SCHEMAS / "locks.schema.json",
 }
 
+HOSTED_SCHEMA_BASE = "https://ns.the-dwc.com/sidecar/v0.1"
+
 
 def load(p): return json.loads(Path(p).read_text())
 
@@ -456,6 +458,41 @@ def validate_cdl_consistency(doc, base_dir):
     return 0  # warnings only — never contributes to rc
 
 
+def check_hosted_schemas():
+    """Stage 2.5 (opt-in): byte-compare each local schema against its hosted copy
+    at HOSTED_SCHEMA_BASE. Any divergence is a drift error — the published schema
+    is the canonical, immutable form and local must match."""
+    import hashlib, subprocess
+
+    print(f"Stage 2.5 — hosted-schema drift ({HOSTED_SCHEMA_BASE})")
+    errs = 0
+    for path in DWC_SCHEMAS.values():
+        name    = path.name
+        url     = f"{HOSTED_SCHEMA_BASE}/{name}"
+        local   = path.read_bytes()
+        lh      = hashlib.sha256(local).hexdigest()
+        try:
+            r = subprocess.run(
+                ["curl", "-sfS", "--max-time", "15", url],
+                capture_output=True, check=True,
+            )
+        except subprocess.CalledProcessError as e:
+            msg = e.stderr.decode(errors="replace").strip() or f"exit {e.returncode}"
+            print(f"  {name:30s} FETCH FAIL ({msg})")
+            errs += 1
+            continue
+        except FileNotFoundError:
+            print("  curl not available on this system — --check-hosted unavailable")
+            return 1
+        rh = hashlib.sha256(r.stdout).hexdigest()
+        if lh == rh:
+            print(f"  {name:30s} OK  ({lh[:12]})")
+        else:
+            print(f"  {name:30s} DRIFT  local={lh[:12]} hosted={rh[:12]}")
+            errs += 1
+    return errs
+
+
 def main(argv):
     import argparse
     ap = argparse.ArgumentParser()
@@ -468,6 +505,10 @@ def main(argv):
                           "matches what an MHL in the same sidecar declares for the "
                           "same file. Stage 8 will verify the MHL's claim against the "
                           "bytes — no information loss, but one I/O pass is saved.")
+    ap.add_argument("--check-hosted", action="store_true",
+                     help="Additionally byte-compare each local schema against its "
+                          "hosted copy at " + HOSTED_SCHEMA_BASE + ". Off by default "
+                          "so validation stays offline-safe; used in CI.")
     args = ap.parse_args(argv[1:])
     target = args.target.resolve()
     base   = (args.base_dir or target.parent).resolve()
@@ -479,6 +520,9 @@ def main(argv):
     print()
     rc += validate_dwc_extensions(doc)
     print()
+    if args.check_hosted:
+        rc += check_hosted_schemas()
+        print()
     rc += validate_chain_integrity(doc)
     print()
     rc += validate_signatures(doc)

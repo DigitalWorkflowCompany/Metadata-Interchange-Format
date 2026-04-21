@@ -58,7 +58,7 @@ Both produce valid sidecars; they differ in I/O cost:
 - `keyring.json` — publishable Ed25519 public keys with `validFrom` / `validUntil` / `revokedAt`
 - `keys.priv.json` — demo private keys; must never be committed in a real deployment
 - `revocations.json` (optional) — CRL-style, overrides keyring at validation time
-- Schema `$id`s point at `https://ns.the-dwc.com/sidecar/v0.1/...` — **not hosted yet**. `validate.py` resolves them locally by `domain` lookup, not by URL fetch.
+- Schema `$id`s are published at `https://ns.the-dwc.com/sidecar/v0.1/...` (Cloudflare Pages, project `dwc-schemas`, sourced from the `DigitalWorkflowCompany/Metadata-Interchange-Format` GitHub repo — `tools/publish-schemas/build.py` produces the `dist/` tree and Pages deploys on push). `validate.py` resolves schemas locally by `domain` lookup, not by URL fetch; pass `--check-hosted` to additionally byte-compare each local schema against its hosted copy. CI runs the same check via `.github/workflows/hosted-schema-drift.yml`.
 
 ## Common commands
 
@@ -71,6 +71,9 @@ python3 validate.py
 
 # Validate any sidecar against a production root
 python3 validate.py <sidecar.omc.json> --base-dir <production-root> [--trust-mhl]
+
+# Validate + byte-compare local schemas against the published copies at ns.the-dwc.com
+python3 validate.py --check-hosted
 
 # Produce a signed sidecar from disk files (re-reads the clip)
 python3 bootstrap.py --clip <CLIP> --mhl <MHL> --mhl-entry <path-in-mhl> \
@@ -106,7 +109,7 @@ Installed via user pip; not a package yet. Imports to expect:
 1. **Never add top-level fields to an OMC Asset.** They will fail Stage 1 due to `unevaluatedProperties: false`. Put extensions in `assetFC.functionalProperties.customData[]` with a `dwc.*` domain.
 2. **Warnings vs. errors.** CDL divergence is a *warning* (Stage 9) because production workflows legitimately carry independent CDL records (on-set vs post). Don't escalate it to a failure without evidence.
 3. **Filenames and collisions.** `watch.py` keys the processed-set on MHL sha256 and on clip-integrity hash; writing a collision resolver that just suffixes by timestamp will silently mask a genuine hash disagreement. Preserve the hash-prefix convention.
-4. **Schema URL stability.** `artifacts.schema.json` etc. advertise versioned URLs. Any breaking field change must bump the version in the `$id` and leave the old schema untouched.
+4. **Schema URL stability.** The v0.1 schemas are published at `ns.the-dwc.com/sidecar/v0.1/` and their bytes are immutable. Any change — additive or breaking — must bump the version in the `$id` (→ `v0.2/`) and leave the old schema untouched at its original URL. Old versions remain hosted indefinitely. Before publication a version's URLs are editable; after publication they are frozen, and the CI drift-check (`.github/workflows/hosted-schema-drift.yml`) will fail any PR that mutates a hosted file.
 5. **Leaf-element truthiness.** `xml.etree.ElementTree.Element.__bool__` returns `False` for leaf elements (no children). Use `elem is None` checks, never `elem or fallback`. See `cdl.py:_find_any`.
 6. **MHL path resolution.** Paths inside an MHL are relative to the MHL file's own directory, not the production root. Stage 8 and `mhl_walker.py` both depend on this — preserve it if touching path handling.
 
