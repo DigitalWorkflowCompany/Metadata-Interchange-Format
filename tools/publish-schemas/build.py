@@ -150,15 +150,19 @@ def root_index() -> str:
 
 
 HEADERS = """\
-# Versioned schema URLs: immutable, fully cacheable, CORS-open.
-/sidecar/*/*.schema.json
-  Content-Type: application/schema+json
-  Access-Control-Allow-Origin: *
-  Cache-Control: public, max-age=31536000, immutable
-
-# Index pages: short cache, revalidate.
+# Index pages first (less specific): short cache, revalidate.
+# Cloudflare Pages applies the LAST matching rule when headers collide,
+# so schema-specific rules must come after.
 /sidecar/*
   Cache-Control: public, max-age=300
+
+# Versioned schema URLs: immutable, fully cacheable, CORS-open.
+# Content-Type can't be overridden on Cloudflare Pages — files are served
+# as application/json based on extension, which is interoperable for JSON
+# Schema consumers.
+/sidecar/*/*.schema.json
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
 """
 
 
