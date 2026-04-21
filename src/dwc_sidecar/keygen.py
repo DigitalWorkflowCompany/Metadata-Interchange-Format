@@ -53,6 +53,39 @@ def _emit_keyring_entry(
     print("--- end ---\n")
 
 
+def _keygen_keychain(kid: str, service: str) -> bytes:
+    import subprocess
+    import sys as _sys
+    if _sys.platform != "darwin":
+        raise SystemExit("ERROR: keychain backend only works on macOS")
+    # Check for existing item
+    probe = subprocess.run(
+        ["security", "find-generic-password", "-s", service, "-a", kid, "-w"],
+        capture_output=True, text=True,
+    )
+    if probe.returncode == 0:
+        raise SystemExit(
+            f"ERROR: keychain already holds an item for kid {kid!r} in service {service!r}. "
+            f"Rotate via a new kid, or remove manually:  "
+            f"security delete-generic-password -s {service} -a {kid}"
+        )
+    priv = Ed25519PrivateKey.generate()
+    priv_b64 = _b64(priv.private_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PrivateFormat.Raw,
+        encryption_algorithm=serialization.NoEncryption(),
+    ))
+    subprocess.run(
+        ["security", "add-generic-password", "-s", service, "-a", kid, "-w", priv_b64],
+        check=True,
+    )
+    print(f"Stored private key in macOS Keychain (service={service!r}, account={kid!r})")
+    return priv.public_key().public_bytes(
+        encoding=serialization.Encoding.Raw,
+        format=serialization.PublicFormat.Raw,
+    )
+
+
 def _keygen_local(kid: str, path: Path) -> bytes:
     path = Path(path)
     bundle: dict[str, str] = {}
@@ -123,8 +156,14 @@ def main() -> int:
     )
     ap.add_argument("--kid", required=True,
                      help="Key identifier (e.g. dwc-dit-02). Must match what signed events will declare.")
-    ap.add_argument("--backend", choices=["local", "file", "pkcs11"], default="local",
-                     help="Where the private key should live (default: local)")
+    ap.add_argument("--backend",
+                     choices=["local", "file", "pkcs11", "keychain"],
+                     default="local",
+                     help="Where the private key should live (default: local). "
+                          "GCP KMS, Vault Transit, and Azure Managed HSM keys are "
+                          "created outside dwc — see each backend's docstring.")
+    ap.add_argument("--service", default="dwc-sidecar",
+                     help="Keychain service name (default: dwc-sidecar)")
     ap.add_argument("--valid-from", default=_iso_days(0),
                      help="ISO-8601 UTC timestamp; defaults to now")
     ap.add_argument("--valid-until", default=_iso_days(365),
@@ -156,6 +195,8 @@ def main() -> int:
             print("ERROR: --path is required with --backend=file", file=sys.stderr)
             return 2
         pub_raw = _keygen_local(args.kid, path)
+    elif args.backend == "keychain":
+        pub_raw = _keygen_keychain(args.kid, args.service)
     else:
         if not args.module:
             print("ERROR: --module is required with --backend=pkcs11", file=sys.stderr)

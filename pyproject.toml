@@ -35,8 +35,17 @@ dependencies = [
 
 
 [project.optional-dependencies]
-dev = ["pytest>=7"]
-hsm = ["python-pkcs11>=0.7"]
+dev   = ["pytest>=7"]
+hsm   = ["python-pkcs11>=0.7"]
+gcp   = ["google-cloud-kms>=2.20"]
+azure = ["azure-keyvault-keys>=4.8", "azure-identity>=1.15"]
+# Vault Transit and macOS Keychain backends use stdlib only — no extra install.
+all   = [
+    "python-pkcs11>=0.7",
+    "google-cloud-kms>=2.20",
+    "azure-keyvault-keys>=4.8",
+    "azure-identity>=1.15",
+]
 
 
 [project.scripts]
