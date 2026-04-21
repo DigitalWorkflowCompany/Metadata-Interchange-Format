@@ -19,16 +19,14 @@ Usage:
 import argparse, base64, hashlib, json, signal, subprocess, sys, time
 from datetime import datetime, timezone
 from pathlib import Path
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-
 from .mhl_walker import (
     build_sidecar_from_mhl_entry, _pick_hash_from_mhl_entry, CLIP_EXTS,
 )
 from .mhl       import parse_mhl
 from .canonical import HASH_ALGS
+from .signers   import get_signer
 
-PRIV_KEYS = Path("keys.priv.json")
-STATE     = Path(".watch-state.json")
+STATE = Path(".watch-state.json")
 
 
 def _now_iso() -> str:
@@ -49,7 +47,7 @@ def _sha256(path: Path) -> str:
 
 class Watcher:
     def __init__(self, root: Path, out_dir: Path, amf_dir, cdl_dir, fdl,
-                 priv, kid: str,
+                 signer,
                  poll_interval: float, stable_seconds: float,
                  validate_each: bool, quarantine_dir: Path):
         self.root           = root
@@ -57,8 +55,7 @@ class Watcher:
         self.amf_dir        = amf_dir
         self.cdl_dir        = cdl_dir
         self.fdl            = fdl
-        self.priv           = priv
-        self.kid            = kid
+        self.signer         = signer
         self.poll_interval  = poll_interval
         self.stable_seconds = stable_seconds
         self.validate_each  = validate_each
@@ -175,7 +172,7 @@ class Watcher:
                 doc = build_sidecar_from_mhl_entry(
                     mhl, f, clip_abs, alg, val,
                     self.root, self.amf_dir, self.cdl_dir, self.fdl,
-                    self.priv, self.kid,
+                    self.signer,
                 )
             except Exception as e:
                 _log("ERROR", f"build {clip_abs.name}: {e}")
@@ -314,11 +311,13 @@ def main():
     amf  = amf if amf and amf.exists() else None
     cdl  = cdl if cdl and cdl.exists() else None
 
-    priv_bundle = json.loads(PRIV_KEYS.read_text())
-    priv = Ed25519PrivateKey.from_private_bytes(base64.b64decode(priv_bundle[args.signing_kid]))
+    try:
+        signer = get_signer(args.signing_kid)
+    except (FileNotFoundError, KeyError) as e:
+        print(f"ERROR: {e}", file=sys.stderr); return 2
 
     quarantine = args.quarantine_dir or (args.out_dir.parent / "quarantine")
-    w = Watcher(root, args.out_dir, amf, cdl, fdl, priv, args.signing_kid,
+    w = Watcher(root, args.out_dir, amf, cdl, fdl, signer,
                  args.interval, args.stable,
                  validate_each=not args.no_validate,
                  quarantine_dir=quarantine)

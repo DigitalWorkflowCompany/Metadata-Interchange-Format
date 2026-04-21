@@ -14,12 +14,10 @@ Usage:
 import argparse, base64, json, sys, time, uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-
 from .canonical import canonical_bytes, event_hash, file_digest, HASH_ALGS
 from .mhl import parse_mhl
+from .signers import get_signer
 
-PRIV_KEYS = Path("keys.priv.json")
 
 CLIP_EXTS = {".mxf", ".ari", ".r3d", ".braw", ".mov", ".mp4", ".dpx", ".exr"}
 MIME_MAP  = {
@@ -76,7 +74,7 @@ def _mhl_artifact(mhl_path: Path, base: Path, mhl_entry: str):
 def build_sidecar_from_mhl_entry(
     mhl_path: Path, mhl_entry: str, clip_abs: Path, hash_alg: str, hash_val: str,
     base: Path, amf_dir: Path | None, cdl_dir: Path | None, fdl: Path | None,
-    signer_priv, signer_kid: str,
+    signer,
 ) -> dict:
     clip_name = clip_abs.stem
     ts        = _iso_now()
@@ -111,8 +109,8 @@ def build_sidecar_from_mhl_entry(
         "prevHash": None,
     }
     event["hash"] = event_hash(event)
-    event["sig"]  = {"alg": "ed25519", "kid": signer_kid,
-                      "value": base64.b64encode(signer_priv.sign(canonical_bytes(event))).decode()}
+    event["sig"]  = {"alg": "ed25519", "kid": signer.kid,
+                      "value": base64.b64encode(signer.sign(canonical_bytes(event))).decode()}
 
     ext = clip_abs.suffix.lower().lstrip(".")
     struct_type, mime = MIME_MAP.get(ext, ("digital.movingImage", "application/octet-stream"))
@@ -203,8 +201,10 @@ def main():
     amf  = amf if amf and amf.exists() else None
     cdl  = cdl if cdl and cdl.exists() else None
 
-    priv_bundle = json.loads(PRIV_KEYS.read_text())
-    priv = Ed25519PrivateKey.from_private_bytes(base64.b64decode(priv_bundle[args.signing_kid]))
+    try:
+        signer = get_signer(args.signing_kid)
+    except (FileNotFoundError, KeyError) as e:
+        print(f"ERROR: {e}", file=sys.stderr); return 2
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
     mhls = find_mhls(base)
@@ -246,7 +246,7 @@ def main():
             mhl_entry_str = f if isinstance(f, str) else str(f)
             doc = build_sidecar_from_mhl_entry(
                 mhl, mhl_entry_str, clip_abs, hash_alg, hash_val,
-                base, amf, cdl, fdl, priv, args.signing_kid,
+                base, amf, cdl, fdl, signer,
             )
             out = args.out_dir / f"{clip_abs.stem}.omc.json"
             out.write_text(json.dumps(doc, indent=2) + "\n")

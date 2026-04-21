@@ -7,12 +7,10 @@ Usage:
 import argparse, base64, json, sys, time, uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-
 from .canonical import canonical_bytes, event_hash, file_digest
+from .signers import get_signer
 
-PRIV_KEYS = Path("keys.priv.json")
-EXT_OK    = {".mxf", ".ari", ".r3d", ".braw", ".mov", ".dpx", ".exr"}
+EXT_OK = {".mxf", ".ari", ".r3d", ".braw", ".mov", ".dpx", ".exr"}
 
 
 def _iso_now() -> str:
@@ -41,7 +39,7 @@ def find_clip_files(ocf_root: Path) -> list[tuple[Path, Path]]:
 
 def build_sidecar(clip: Path, roll_dir: Path, base: Path,
                    amf_dir: Path, cdl_dir: Path, fdl: Path | None,
-                   hash_alg: str, signer_priv, signer_kid: str) -> dict:
+                   hash_alg: str, signer) -> dict:
     clip_name = clip.stem
     mhl       = find_mhl_for_roll(roll_dir)
     # derive mhl_entry = path relative to roll_dir, POSIX-style
@@ -95,8 +93,8 @@ def build_sidecar(clip: Path, roll_dir: Path, base: Path,
         "prevHash": None,
     }
     event["hash"] = event_hash(event)
-    event["sig"]  = {"alg": "ed25519", "kid": signer_kid,
-                      "value": base64.b64encode(signer_priv.sign(canonical_bytes(event))).decode()}
+    event["sig"]  = {"alg": "ed25519", "kid": signer.kid,
+                      "value": base64.b64encode(signer.sign(canonical_bytes(event))).decode()}
 
     struct_type = "digital.movingImage" if clip.suffix.lower() in {".mxf",".mov",".mp4",".r3d",".braw"} else "digital.imageSequence"
     mime        = {"mxf":"application/mxf","mov":"video/quicktime","mp4":"video/mp4",
@@ -175,8 +173,10 @@ def main():
     fdls    = list((base / "Colour-Information/FDL").glob("*.fdl")) if (base / "Colour-Information/FDL").exists() else []
     fdl     = fdls[0] if fdls else None
 
-    priv_bundle = json.loads(PRIV_KEYS.read_text())
-    priv = Ed25519PrivateKey.from_private_bytes(base64.b64decode(priv_bundle[args.signing_kid]))
+    try:
+        signer = get_signer(args.signing_kid)
+    except (FileNotFoundError, KeyError) as e:
+        print(f"ERROR: {e}", file=sys.stderr); return 2
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -195,7 +195,7 @@ def main():
         size = clip.stat().st_size
         try:
             doc = build_sidecar(clip, roll, base, amf_dir, cdl_dir, fdl,
-                                  args.hash, priv, args.signing_kid)
+                                  args.hash, signer)
         except Exception as e:
             print(f"[{i}/{len(clips)}] {clip.name}  FAIL {e}")
             continue

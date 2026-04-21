@@ -55,9 +55,15 @@ Both produce valid sidecars; they differ in I/O cost:
 
 ### External trust surfaces
 
-- `keyring.json` — publishable Ed25519 public keys with `validFrom` / `validUntil` / `revokedAt`
-- `keys.priv.json` — demo private keys; must never be committed in a real deployment
-- `revocations.json` (optional) — CRL-style, overrides keyring at validation time
+- `keyring.json` — publishable Ed25519 public keys with `validFrom` / `validUntil` / `revokedAt`. Required at validation time; path is CWD-relative.
+- `revocations.json` (optional) — CRL-style, overrides `keyring.json` at validation time.
+- **Signer backends** (`dwc_sidecar/signers/`) — production key material is held by a backend, never inlined. All five signing callsites (`bootstrap`, `batch`, `mhl_walker`, `watch`, `sign_example`) go through `signers.get_signer(kid)`:
+  - `local` — demo/dev: reads base64 Ed25519 private keys from `keys.priv.json` in CWD. Private keys at rest; **never use in production**.
+  - `file` — reads from an arbitrary path (Docker/Kubernetes secret mount, external volume). Same on-disk format as `local`.
+  - `pkcs11` — any PKCS#11 v3.0 token (YubiHSM 2, Nitrokey, SoftHSM, Thales, AWS CloudHSM…). Private key never leaves the hardware; only canonical bytes enter and signatures come back. Requires `pip install dwc-sidecar[hsm]`.
+  - Backend selection per-kid via `DWC_SIGNERS=<path>` env var pointing at a JSON config (example in `dwc_sidecar/signers/__init__.py` docstring). Unset → LocalSigner reading `keys.priv.json` — dev default.
+  - Generate keys with `dwc keygen --kid <new-kid> --backend <local|file|pkcs11> [...]`. Emits a `keyring.json` entry ready to paste.
+- `keys.priv.json` — **dev/demo only.** Plain-text private keys on disk; assume it should not exist on a production signing host. Add it to `.gitignore` and replace with `file` or `pkcs11` backend before shipping.
 - Schema `$id`s are published at `https://ns.the-dwc.com/sidecar/v0.1/...` (Cloudflare Pages, project `dwc-schemas`, sourced from the `DigitalWorkflowCompany/Metadata-Interchange-Format` GitHub repo — `tools/publish-schemas/build.py` produces the `dist/` tree and Pages deploys on push). `validate.py` resolves schemas locally by `domain` lookup, not by URL fetch; pass `--check-hosted` to additionally byte-compare each local schema against its hosted copy. CI runs the same check via `.github/workflows/hosted-schema-drift.yml`.
 
 ## Common commands
@@ -91,6 +97,14 @@ dwc batch <PRODUCTION-ROOT> [--validate]
 # Long-running watch-folder service
 dwc watch <PRODUCTION-ROOT> --interval 2 --stable 5 \
            [--no-validate] [--quarantine-dir <DIR>]
+
+# Generate a new signing key (local / file / HSM) and print a keyring.json entry
+dwc keygen --kid dwc-dit-02 --backend local
+dwc keygen --kid dwc-dit-02 --backend pkcs11 \
+           --module /usr/local/lib/libykcs11.dylib --slot 0
+
+# Point the runtime at a production signer config instead of keys.priv.json
+export DWC_SIGNERS=/etc/dwc/signers.json
 
 # Tests (pytest; CDL test auto-skips if DWC_CORPUS env var is unset)
 pytest

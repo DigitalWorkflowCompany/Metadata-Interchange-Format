@@ -36,6 +36,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=7"]
+hsm = ["python-pkcs11>=0.7"]
 
 
 [project.scripts]

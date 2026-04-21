@@ -1,7 +1,7 @@
 """`dwc <subcommand>` dispatcher — routes to each module's main()."""
 import sys
 
-from . import validate, bootstrap, batch, mhl_walker, watch, sign_example
+from . import validate, bootstrap, batch, mhl_walker, watch, sign_example, keygen
 
 COMMANDS = {
     "validate":     (validate,     "Validate a sidecar through 9 stages"),
@@ -10,6 +10,7 @@ COMMANDS = {
     "mhl-walk":     (mhl_walker,   "Walk a production tree, lift hashes from the MHL"),
     "watch":        (watch,        "Long-running watch-folder service"),
     "sign-example": (sign_example, "Regenerate demo keys and re-sign the example sidecar"),
+    "keygen":       (keygen,       "Generate a new Ed25519 signing key (local/file/pkcs11)"),
 }
 
 

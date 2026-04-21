@@ -2,13 +2,18 @@
 """Regenerate demo keys, rewrite event hash-chain + signatures in example-clip.omc.json,
 and publish the matching keyring.json.
 
-Run after editing events in the example, or to bootstrap the demo."""
-import base64, json
+Run after editing events in the example, or to bootstrap the demo. Uses the
+local JSON-file signer backend regardless of DWC_SIGNERS — demo keys only ever
+live in keys.priv.json, never in an HSM."""
+import base64
+import json
 from pathlib import Path
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 from .canonical import canonical_bytes, event_hash, dump_pubkey_b64
+from .signers.jsonfile import JsonFileSigner
 
 # Demo files resolved against the caller's CWD (repo root in practice).
 EXAMPLE  = Path("example-clip.omc.json")
@@ -26,14 +31,7 @@ KEY_WINDOWS = {
 }
 
 
-def load_or_make_keys():
-    if PRIVKEYS.exists():
-        raw = json.loads(PRIVKEYS.read_text())
-        return {
-            kid: Ed25519PrivateKey.from_private_bytes(base64.b64decode(raw[kid]))
-            for kid in KIDS
-        }
-    keys = {kid: Ed25519PrivateKey.generate() for kid in KIDS}
+def _write_privkeys(keys: dict[str, Ed25519PrivateKey]) -> None:
     PRIVKEYS.write_text(json.dumps({
         kid: base64.b64encode(k.private_bytes(
             encoding=serialization.Encoding.Raw,
@@ -41,11 +39,22 @@ def load_or_make_keys():
             encryption_algorithm=serialization.NoEncryption(),
         )).decode() for kid, k in keys.items()
     }, indent=2))
+
+
+def load_or_make_keys() -> dict[str, Ed25519PrivateKey]:
+    if PRIVKEYS.exists():
+        raw = json.loads(PRIVKEYS.read_text())
+        return {
+            kid: Ed25519PrivateKey.from_private_bytes(base64.b64decode(raw[kid]))
+            for kid in KIDS
+        }
+    keys = {kid: Ed25519PrivateKey.generate() for kid in KIDS}
+    _write_privkeys(keys)
     print(f"Generated demo keys → {PRIVKEYS.name}")
     return keys
 
 
-def write_keyring(keys):
+def write_keyring(keys: dict[str, Ed25519PrivateKey]) -> None:
     KEYRING.write_text(json.dumps({
         "alg": "ed25519",
         "keys": {
@@ -62,37 +71,38 @@ def write_keyring(keys):
     print(f"Wrote public keyring → {KEYRING.name}")
 
 
-def re_sign_events(doc, keys):
+def re_sign_events(doc: dict) -> None:
+    """Re-sign events in-place via the local-file signer backend. The keys
+    must already exist at PRIVKEYS — load_or_make_keys() is responsible for
+    putting them there first."""
     cd = doc["Asset"][0]["assetFC"]["functionalProperties"]["customData"]
     events = next(e["value"] for e in cd if e["domain"] == "dwc.sidecar.events")
 
+    signers = {kid: JsonFileSigner(kid, PRIVKEYS) for kid in KIDS}
+
     prev = None
     for ev in events:
-        # link to previous
         ev["prevHash"] = prev
-        # drop old hash/sig, recompute
         ev.pop("hash", None)
         ev.pop("sig",  None)
         kid = KIDS[0] if ev["seq"] == 1 else (
             "dwc-color-01" if ev["action"] == "attach" else "dwc-post-01"
         )
-        # stamp new hash over canonical body
         h = event_hash(ev)
-        # sign canonical body
-        priv = keys[kid]
-        sig_b64 = base64.b64encode(priv.sign(canonical_bytes(ev))).decode()
+        signer = signers[kid]
+        sig_b64 = base64.b64encode(signer.sign(canonical_bytes(ev))).decode()
         ev["hash"] = h
         ev["sig"]  = {"alg": "ed25519", "kid": kid, "value": sig_b64}
         prev = h
         print(f"  seq={ev['seq']:<2} action={ev['action']:<10} kid={kid}")
 
 
-def main():
+def main() -> None:
     keys = load_or_make_keys()
     write_keyring(keys)
     doc = json.loads(EXAMPLE.read_text())
     print("\nRe-signing events:")
-    re_sign_events(doc, keys)
+    re_sign_events(doc)
     EXAMPLE.write_text(json.dumps(doc, indent=2) + "\n")
     print(f"\nUpdated → {EXAMPLE.name}")
 

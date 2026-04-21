@@ -18,9 +18,8 @@ Example:
 import argparse, base64, json, sys, uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-
 from .canonical import canonical_bytes, event_hash, file_digest
+from .signers import get_signer
 
 PRIV_KEYS = Path("keys.priv.json")
 
@@ -143,16 +142,13 @@ def main():
         "target": f"urn:uuid:{clip_uuid}",
         "prevHash": None,
     }
-    if not PRIV_KEYS.exists():
-        print(f"ERROR: {PRIV_KEYS.name} not found — run sign-example.py first", file=sys.stderr)
-        return 2
-    priv_bundle = json.loads(PRIV_KEYS.read_text())
-    if args.signing_kid not in priv_bundle:
-        print(f"ERROR: kid {args.signing_kid!r} not in {PRIV_KEYS.name}", file=sys.stderr); return 2
-    priv = Ed25519PrivateKey.from_private_bytes(base64.b64decode(priv_bundle[args.signing_kid]))
+    try:
+        signer = get_signer(args.signing_kid)
+    except (FileNotFoundError, KeyError) as e:
+        print(f"ERROR: {e}", file=sys.stderr); return 2
     create_event["hash"] = event_hash(create_event)
     create_event["sig"]  = {"alg": "ed25519", "kid": args.signing_kid,
-                             "value": base64.b64encode(priv.sign(canonical_bytes(create_event))).decode()}
+                             "value": base64.b64encode(signer.sign(canonical_bytes(create_event))).decode()}
 
     # --- assemble sidecar ---
     doc = {
