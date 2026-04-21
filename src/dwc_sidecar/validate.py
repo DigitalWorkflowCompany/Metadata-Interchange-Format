@@ -10,18 +10,20 @@ from datetime import datetime
 from pathlib import Path
 from jsonschema import Draft202012Validator, FormatChecker, validators
 
-from canonical import (  # type: ignore[import-not-found]
+from .canonical import (
     verify_event, load_pubkey_b64, file_digest, HASH_ALGS,
 )
-from mhl import parse_mhl  # type: ignore[import-not-found]
-from cdl import parse_cdl, extract_cdl_from_amf, cdl_values_equal  # type: ignore[import-not-found]
+from .mhl import parse_mhl
+from .cdl import parse_cdl, extract_cdl_from_amf, cdl_values_equal
 
 HERE        = Path(__file__).parent
-OMC         = HERE / "OMC" / "OMC-JSON" / "OMC-JSON-v2.8.schema.json"
-SCHEMAS     = HERE / "schemas"
-DEFAULT     = HERE / "example-clip.omc.json"
-KEYRING     = HERE / "keyring.json"
-REVOCATIONS = HERE / "revocations.json"
+DATA        = HERE / "data"
+OMC         = DATA / "OMC" / "OMC-JSON" / "OMC-JSON-v2.8.schema.json"
+SCHEMAS     = DATA / "schemas"
+# Deployment-specific files resolved against the caller's CWD, not the package dir.
+DEFAULT     = Path("example-clip.omc.json")
+KEYRING     = Path("keyring.json")
+REVOCATIONS = Path("revocations.json")
 
 DWC_SCHEMAS = {
     "dwc.sidecar.artifacts": SCHEMAS / "artifacts.schema.json",

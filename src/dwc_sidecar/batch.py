@@ -9,10 +9,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
-from canonical import canonical_bytes, event_hash, file_digest  # type: ignore[import-not-found]
+from .canonical import canonical_bytes, event_hash, file_digest
 
-HERE      = Path(__file__).parent
-PRIV_KEYS = HERE / "keys.priv.json"
+PRIV_KEYS = Path("keys.priv.json")
 EXT_OK    = {".mxf", ".ari", ".r3d", ".braw", ".mov", ".dpx", ".exr"}
 
 
@@ -163,7 +162,7 @@ def build_sidecar(clip: Path, roll_dir: Path, base: Path,
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("root", type=Path)
-    ap.add_argument("--out-dir", type=Path, default=HERE / "sidecars")
+    ap.add_argument("--out-dir", type=Path, default=Path("sidecars"))
     ap.add_argument("--hash", default="xxh64", choices=["md5","sha1","sha256","sha512","blake3","xxh64","xxh3","c4"])
     ap.add_argument("--signing-kid", default="dwc-dit-01")
     ap.add_argument("--validate", action="store_true", help="Run validate.py on each produced sidecar")
@@ -220,7 +219,7 @@ def main():
         for clip_name, _, _ in per_clip_stats:
             sc = args.out_dir / f"{Path(clip_name).stem}.omc.json"
             r = subprocess.run(
-                ["python3", "validate.py", str(sc), "--base-dir", str(base)],
+                ["python3", "-m", "dwc_sidecar.validate", str(sc), "--base-dir", str(base)],
                 capture_output=True, text=True)
             ok = r.returncode == 0
             if not ok:

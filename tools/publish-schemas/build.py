@@ -22,7 +22,7 @@ from pathlib import Path
 
 HERE    = Path(__file__).resolve().parent
 REPO    = HERE.parent.parent
-SCHEMAS = REPO / "schemas"
+SCHEMAS = REPO / "src" / "dwc_sidecar" / "data" / "schemas"
 DIST    = REPO / "dist"
 VERSION = "v0.1"
 REPO_URL = "https://github.com/DigitalWorkflowCompany/Metadata-Interchange-Format"

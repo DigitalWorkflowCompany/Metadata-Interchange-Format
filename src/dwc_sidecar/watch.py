@@ -21,15 +21,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
-from mhl_walker import (  # type: ignore[import-not-found]
+from .mhl_walker import (
     build_sidecar_from_mhl_entry, _pick_hash_from_mhl_entry, CLIP_EXTS,
 )
-from mhl       import parse_mhl                                      # type: ignore[import-not-found]
-from canonical import HASH_ALGS                                      # type: ignore[import-not-found]
+from .mhl       import parse_mhl
+from .canonical import HASH_ALGS
 
-HERE      = Path(__file__).parent
-PRIV_KEYS = HERE / "keys.priv.json"
-STATE     = HERE / ".watch-state.json"
+PRIV_KEYS = Path("keys.priv.json")
+STATE     = Path(".watch-state.json")
 
 
 def _now_iso() -> str:
@@ -263,7 +262,7 @@ class Watcher:
 
     def _validate(self, sidecar: Path) -> tuple[bool, str]:
         r = subprocess.run(
-            ["python3", str(HERE / "validate.py"),
+            ["python3", "-m", "dwc_sidecar.validate",
              str(sidecar), "--base-dir", str(self.root), "--trust-mhl"],
             capture_output=True, text=True,
         )
@@ -289,7 +288,7 @@ class Watcher:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("root", type=Path)
-    ap.add_argument("--out-dir",  type=Path, default=HERE / "sidecars-watched")
+    ap.add_argument("--out-dir",  type=Path, default=Path("sidecars-watched"))
     ap.add_argument("--amf-dir",  type=Path, default=None)
     ap.add_argument("--cdl-dir",  type=Path, default=None)
     ap.add_argument("--fdl",      type=Path, default=None)

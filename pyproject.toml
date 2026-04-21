@@ -1,0 +1,58 @@
+[build-system]
+requires      = ["hatchling>=1.21"]
+build-backend = "hatchling.build"
+
+
+[project]
+name            = "dwc-sidecar"
+version         = "0.1.0"
+description     = "Reference implementation of the DWC per-clip metadata sidecar format — composes with MovieLabs OMC v2.8."
+requires-python = ">=3.10"
+authors         = [{ name = "Digital Workflow Company", email = "adam@the-dwc.com" }]
+keywords        = [
+    "film", "post-production", "metadata", "sidecar",
+    "omc", "amf", "mhl", "cdl", "fdl", "ale",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Video",
+]
+
+dependencies = [
+    "jsonschema>=4.18",
+    "rfc8785>=0.1",
+    "cryptography>=41",
+    "xxhash>=3",
+    "blake3>=0.4",
+    "pyyaml>=6",
+]
+
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+
+[project.scripts]
+dwc = "dwc_sidecar.cli:main"
+
+
+[project.urls]
+Repository = "https://github.com/DigitalWorkflowCompany/Metadata-Interchange-Format"
+Schemas    = "https://ns.the-dwc.com/sidecar/v0.1/"
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dwc_sidecar"]
+
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/dwc_sidecar",
+    "tests",
+]

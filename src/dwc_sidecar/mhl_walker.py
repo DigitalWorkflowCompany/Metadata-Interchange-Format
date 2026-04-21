@@ -16,11 +16,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
-from canonical import canonical_bytes, event_hash, file_digest, HASH_ALGS  # type: ignore[import-not-found]
-from mhl import parse_mhl  # type: ignore[import-not-found]
+from .canonical import canonical_bytes, event_hash, file_digest, HASH_ALGS
+from .mhl import parse_mhl
 
-HERE      = Path(__file__).parent
-PRIV_KEYS = HERE / "keys.priv.json"
+PRIV_KEYS = Path("keys.priv.json")
 
 CLIP_EXTS = {".mxf", ".ari", ".r3d", ".braw", ".mov", ".mp4", ".dpx", ".exr"}
 MIME_MAP  = {
@@ -181,7 +180,7 @@ def find_mhls(root: Path) -> list[Path]:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("root", type=Path)
-    ap.add_argument("--out-dir",  type=Path, default=HERE / "sidecars-mhl")
+    ap.add_argument("--out-dir",  type=Path, default=Path("sidecars-mhl"))
     ap.add_argument("--amf-dir",  type=Path, default=None,
                      help="Directory of per-clip AMFs (default: <root>/Colour-Information/AMF if present)")
     ap.add_argument("--cdl-dir",  type=Path, default=None,
@@ -267,7 +266,7 @@ def main():
         vt0 = time.perf_counter()
         for sc in sorted(args.out_dir.glob("*.omc.json")):
             r = subprocess.run(
-                ["python3", "validate.py", str(sc), "--base-dir", str(base)],
+                ["python3", "-m", "dwc_sidecar.validate", str(sc), "--base-dir", str(base)],
                 capture_output=True, text=True)
             if r.returncode != 0:
                 fails += 1

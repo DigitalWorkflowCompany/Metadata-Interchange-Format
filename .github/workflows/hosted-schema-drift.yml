@@ -7,7 +7,7 @@ name: hosted-schema-drift
 on:
   pull_request:
     paths:
-      - 'schemas/**'
+      - 'src/dwc_sidecar/data/schemas/**'
       - 'tools/publish-schemas/**'
       - '.github/workflows/hosted-schema-drift.yml'
   schedule:
@@ -27,7 +27,7 @@ jobs:
 
           BASE  = "https://ns.the-dwc.com/sidecar/v0.1"
           FILES = ["artifacts.schema.json", "events.schema.json", "locks.schema.json"]
-          REPO  = Path("schemas")
+          REPO  = Path("src/dwc_sidecar/data/schemas")
 
           fails = 0
           for name in FILES:

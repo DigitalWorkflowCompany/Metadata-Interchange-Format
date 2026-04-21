@@ -8,12 +8,12 @@ from pathlib import Path
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives import serialization
 
-from canonical import canonical_bytes, event_hash, dump_pubkey_b64  # type: ignore[import-not-found]
+from .canonical import canonical_bytes, event_hash, dump_pubkey_b64
 
-HERE      = Path(__file__).parent
-EXAMPLE   = HERE / "example-clip.omc.json"
-KEYRING   = HERE / "keyring.json"
-PRIVKEYS  = HERE / "keys.priv.json"   # demo only; gitignore in real use
+# Demo files resolved against the caller's CWD (repo root in practice).
+EXAMPLE  = Path("example-clip.omc.json")
+KEYRING  = Path("keyring.json")
+PRIVKEYS = Path("keys.priv.json")   # demo only; gitignore in real use
 
 KIDS = ["dwc-dit-01", "dwc-color-01", "dwc-post-01"]
 

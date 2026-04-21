@@ -20,10 +20,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
-from canonical import canonical_bytes, event_hash, file_digest  # type: ignore[import-not-found]
+from .canonical import canonical_bytes, event_hash, file_digest
 
-HERE       = Path(__file__).parent
-PRIV_KEYS  = HERE / "keys.priv.json"
+PRIV_KEYS = Path("keys.priv.json")
 
 # structuralType guesses by file extension
 _EXT_STRUCT = {
@@ -84,7 +83,7 @@ def main():
     args = ap.parse_args()
 
     clip = args.clip.resolve()
-    base = (args.base_dir or HERE).resolve()
+    base = (args.base_dir or Path.cwd()).resolve()
     if not clip.exists():
         print(f"ERROR: clip not found: {clip}", file=sys.stderr); return 2
 
