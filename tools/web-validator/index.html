@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Stateless DWC sidecar validator — runs entirely in your browser; nothing is uploaded.">
+  <title>DWC Sidecar Validator</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header>
+    <h1>DWC Sidecar Validator</h1>
+    <p class="pitch" aria-live="polite">
+      Validated locally in your browser &mdash; <strong>nothing is uploaded</strong>.
+    </p>
+  </header>
+
+  <main>
+    <section aria-labelledby="drop-heading">
+      <h2 id="drop-heading" class="sr-only">Drop zone</h2>
+
+      <label for="file-input" class="drop-zone" id="drop-zone">
+        <p class="drop-zone-title">Drop a <code>.omc.json</code> sidecar or a <code>.zip</code> bundle here</p>
+        <p class="drop-zone-hint">or click to choose files</p>
+        <input type="file" id="file-input" hidden multiple accept=".json,.zip,.mhl,.ascmhl,.amf,.fdl,.cdl,.ale">
+      </label>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+
+      <details class="tips">
+        <summary>What to drop</summary>
+        <ul>
+          <li>A single <code>.omc.json</code> sidecar runs the schema, chain-integrity, and signature stages.</li>
+          <li>A <code>.zip</code> containing the sidecar plus its referenced artifacts (<code>keyring.json</code>, MHL, AMF, FDL, CDL&hellip;) runs all nine stages. Artifacts not included in the zip are reported as <em>skipped</em>, not failed.</li>
+          <li>Absolute production paths in the sidecar are remapped by basename to the files present in the zip, so <code>/Volumes/Mag_A001/&hellip;</code> paths work unchanged.</li>
+          <li><code>blake3</code>-hashed artifacts are not supported in-browser (no WASM wheel). Use the CLI for those.</li>
+        </ul>
+      </details>
+    </section>
+
+    <section id="report" class="report hidden" aria-labelledby="report-heading">
+      <div class="report-header">
+        <h2 id="report-heading">Validation report</h2>
+        <button id="copy-report" type="button">Copy report</button>
+      </div>
+      <p id="summary" class="summary"></p>
+      <ul id="stages" class="stages"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>
+      Schemas: <a href="https://ns.the-dwc.com/sidecar/v0.1/">ns.the-dwc.com/sidecar/v0.1</a>
+      &middot; Source:
+      <a href="https://github.com/DigitalWorkflowCompany/Metadata-Interchange-Format">GitHub</a>
+    </p>
+  </footer>
+
+  <!-- Pyodide is loaded lazily on first drop — see app.js. -->
+  <script src="app.js" defer></script>
+</body>
+</html>

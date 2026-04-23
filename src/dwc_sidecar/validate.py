@@ -314,9 +314,15 @@ def _mhl_declared_hash_for_path(doc, base_dir, clip_path_str):
     return None
 
 
-def validate_artifact_files(doc, base_dir, trust_mhl=False) -> dict:
+def validate_artifact_files(doc, base_dir, trust_mhl=False, *,
+                             missing_is_skip: bool = False) -> dict:
     """Stage 6: resolve each artifact.path relative to base_dir, read the file,
-    hash it with the declared alg, and compare to the declared value."""
+    hash it with the declared alg, and compare to the declared value.
+
+    ``missing_is_skip`` is set by the web validator (plan §4.4a) because a user
+    dropping a sidecar zip may legitimately omit the 30GB camera original;
+    that's not a FAIL, it's just outside-scope for in-browser verification.
+    CLI callers keep the default (FAIL on missing file)."""
     groups    = _group_by_domain(doc)
     artifacts = groups.get("dwc.sidecar.artifacts") or []
 
@@ -332,6 +338,10 @@ def validate_artifact_files(doc, base_dir, trust_mhl=False) -> dict:
         where = f"artifacts[{idx}] kind={a.get('kind')} path={a.get('path')}"
 
         if not path.exists():
+            if missing_is_skip:
+                lines.append(f"Stage 6 — {where}: SKIP — file not provided in zip")
+                skipped += 1
+                continue
             lines.append(f"Stage 6 — {where}: FAIL — file not found")
             errs += 1
             continue
@@ -523,7 +533,10 @@ def check_hosted_schemas() -> dict:
                    status=status, errors=errs, lines=lines)
 
 
-def _run_stages(doc, base_dir: Path, *, trust_mhl: bool, check_hosted: bool) -> list[dict]:
+def _run_stages(doc, base_dir: Path, *, trust_mhl: bool, check_hosted: bool,
+                keyring_path: Path | None = None,
+                revocations_path: Path | None = None,
+                missing_is_skip: bool = False) -> list[dict]:
     """Run all stages in the canonical order and return their results. Shared
     by main() (which prints) and validate_as_json() (which returns a dict)."""
     results = [
@@ -534,9 +547,14 @@ def _run_stages(doc, base_dir: Path, *, trust_mhl: bool, check_hosted: bool) -> 
         results.append(check_hosted_schemas())
     results.extend([
         validate_chain_integrity(doc),
-        validate_signatures(doc),
+        validate_signatures(
+            doc,
+            keyring_path    = keyring_path    if keyring_path    is not None else KEYRING,
+            revocations_path= revocations_path if revocations_path is not None else REVOCATIONS,
+        ),
         validate_lock_event_crosscheck(doc),
-        validate_artifact_files(doc, base_dir, trust_mhl=trust_mhl),
+        validate_artifact_files(doc, base_dir, trust_mhl=trust_mhl,
+                                missing_is_skip=missing_is_skip),
         validate_omc(doc, strict=True),
         validate_mhl_inner(doc, base_dir),
         validate_cdl_consistency(doc, base_dir),
@@ -545,18 +563,27 @@ def _run_stages(doc, base_dir: Path, *, trust_mhl: bool, check_hosted: bool) -> 
 
 
 def validate_as_json(sidecar_path: Path, base_dir: Path | None = None, *,
-                     trust_mhl: bool = False, check_hosted: bool = False) -> dict:
+                     trust_mhl: bool = False, check_hosted: bool = False,
+                     keyring_path: Path | None = None,
+                     revocations_path: Path | None = None,
+                     missing_is_skip: bool = False) -> dict:
     """Run the 9-stage validator and return a structured report. No stdout,
     no os.chdir — safe to call from long-lived processes and from Pyodide
     where CWD is a shared resource across async calls.
 
     base_dir defaults to the sidecar's own directory. Used to resolve relative
     artifact paths; pass an explicit value when sidecar paths don't match the
-    local filesystem (e.g. production paths inside a zip extracted to /work/)."""
+    local filesystem (e.g. production paths inside a zip extracted to /work/).
+
+    keyring_path defaults to CWD-relative ``keyring.json`` (preserving CLI
+    behaviour). The web validator passes an explicit path so Stage 4 resolves
+    the keyring inside the dropped bundle rather than against process CWD."""
     target = Path(sidecar_path).resolve()
     base   = Path(base_dir).resolve() if base_dir is not None else target.parent
     doc    = load(target)
-    results = _run_stages(doc, base, trust_mhl=trust_mhl, check_hosted=check_hosted)
+    results = _run_stages(doc, base, trust_mhl=trust_mhl, check_hosted=check_hosted,
+                          keyring_path=keyring_path, revocations_path=revocations_path,
+                          missing_is_skip=missing_is_skip)
     errors  = sum(r["errors"] for r in results)
     return {
         "target": str(target),

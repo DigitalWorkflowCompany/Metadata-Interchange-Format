@@ -9,11 +9,22 @@
 import base64, hashlib
 import rfc8785  # type: ignore[import-not-found]
 import xxhash   # type: ignore[import-not-found]
-import blake3   # type: ignore[import-not-found]
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey, Ed25519PublicKey,
 )
 from cryptography.exceptions import InvalidSignature
+
+# blake3 is an optional dep at import time so the package loads in
+# environments that don't ship it — notably Pyodide's package index at
+# v0.27.3 has no blake3 wheel. Sidecars that declare blake3-hashed
+# artifacts fail with a clear ImportError when the hasher is *used*
+# (Stage 6/8), not at import time (plan §4.6).
+try:
+    import blake3  # type: ignore[import-not-found]
+    _HAS_BLAKE3 = True
+except ImportError:
+    blake3 = None  # type: ignore[assignment]
+    _HAS_BLAKE3 = False
 
 
 # ASC MHL C4 ID (https://github.com/Avalanche-io/c4) — SHA-512 → base58 → "c4"-prefixed, padded to 90 chars.
@@ -41,7 +52,14 @@ class _Xxh64(_HasherBase):
 class _Xxh3(_HasherBase):
     def _make(self): return xxhash.xxh3_64()
 class _Blake3(_HasherBase):
-    def _make(self): return blake3.blake3()
+    def _make(self):
+        if not _HAS_BLAKE3 or blake3 is None:
+            raise ImportError(
+                "blake3 not available in this environment — install via "
+                "`pip install blake3`, or use the CLI instead of the web "
+                "validator for sidecars that declare blake3-hashed artifacts."
+            )
+        return blake3.blake3()  # type: ignore[union-attr]
     def hexdigest(self) -> str: return self._h.hexdigest()
 
 class _C4:

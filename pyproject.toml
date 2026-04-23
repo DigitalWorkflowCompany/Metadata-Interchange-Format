@@ -59,6 +59,15 @@ Schemas    = "https://ns.the-dwc.com/sidecar/v0.1/"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dwc_sidecar"]
+# Exclude OMC vendor material that validate.py never loads. The runtime
+# reads only OMC-JSON/OMC-JSON-v2.8.schema.json; the RDF/HTML/example
+# material adds ~80 MB to the wheel and breaks the <10 MB in-browser
+# Pyodide install budget for §4 (web validator).
+exclude = [
+    "src/dwc_sidecar/data/OMC/OMC-RDF",
+    "src/dwc_sidecar/data/OMC/OMC-JSON/Docs",
+    "src/dwc_sidecar/data/OMC/OMC-JSON/Examples",
+]
 
 
 [tool.hatch.build.targets.sdist]

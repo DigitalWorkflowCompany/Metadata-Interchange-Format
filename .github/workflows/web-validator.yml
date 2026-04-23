@@ -1,0 +1,83 @@
+name: web-validator
+
+# Builds the static bundle for the in-browser validator (plan §4).
+# Always uploads dist/ as a workflow artifact; deploys to Cloudflare Pages
+# if the CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID secrets are set.
+# Forks and PRs without those secrets still get a valid bundle artifact.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/web-validator/**'
+      - 'src/dwc_sidecar/**'
+      - 'pyproject.toml'
+      - '.github/workflows/web-validator.yml'
+  pull_request:
+    paths:
+      - 'tools/web-validator/**'
+      - 'src/dwc_sidecar/**'
+      - 'pyproject.toml'
+      - '.github/workflows/web-validator.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install build + dwc-sidecar
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build
+          python -m pip install -e .[dev]
+
+      - name: Run pytest (fast; no Pyodide in CI)
+        run: pytest -q
+
+      - name: Build dist/
+        run: python3 tools/web-validator/build.py
+
+      - name: Upload bundle as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-validator-dist
+          path: tools/web-validator/dist
+          retention-days: 30
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # Only deploy from main, and only when the Cloudflare secrets are set.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-validator-dist
+          path: tools/web-validator/dist
+
+      - name: Check for Cloudflare credentials
+        id: have_cf
+        run: |
+          if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ] \
+             && [ -n "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping Cloudflare Pages deploy — CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID secrets not set."
+          fi
+
+      - name: Deploy to Cloudflare Pages
+        if: steps.have_cf.outputs.ready == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken:  ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy tools/web-validator/dist --project-name=dwc-validator
