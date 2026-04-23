@@ -1,7 +1,8 @@
 """`dwc <subcommand>` dispatcher — routes to each module's main()."""
 import sys
 
-from . import validate, bootstrap, batch, mhl_walker, watch, sign_example, keygen, init, doctor
+from . import (validate, bootstrap, batch, mhl_walker, watch, sign_example,
+                keygen, init, doctor, ale_emitter)
 
 COMMANDS = {
     "init":         (init,         "One-command onboarding: key + keyring + signers + launch unit"),
@@ -11,6 +12,7 @@ COMMANDS = {
     "batch":        (batch,        "Batch-produce sidecars (audit mode, re-hashes each clip)"),
     "mhl-walk":     (mhl_walker,   "Walk a production tree, lift hashes from the MHL"),
     "watch":        (watch,        "Long-running watch-folder service"),
+    "ale-export":   (ale_emitter,  "Export DWC provenance metadata to an Avid Log Exchange (ALE) file"),
     "sign-example": (sign_example, "Regenerate demo keys and re-sign the example sidecar"),
     "keygen":       (keygen,       "Generate a new Ed25519 signing key (local/file/pkcs11)"),
 }

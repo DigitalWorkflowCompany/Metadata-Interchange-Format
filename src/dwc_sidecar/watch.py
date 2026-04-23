@@ -22,11 +22,16 @@ from pathlib import Path
 from .mhl_walker import (
     build_sidecar_from_mhl_entry, _pick_hash_from_mhl_entry, CLIP_EXTS,
 )
-from .mhl       import parse_mhl
-from .canonical import HASH_ALGS
-from .signers   import get_signer
+from .mhl         import parse_mhl
+from .canonical   import HASH_ALGS
+from .signers     import get_signer
+from .ale_emitter import ale_path_for_day, extract_row_from_sidecar, update_ale
 
 STATE = Path(".watch-state.json")
+
+# Keep the recent-emissions ring bounded so the state file stays O(1) in size
+# across a multi-day shoot (plan §1.8). The menu-bar app (§3) reads this list.
+EMITTED_CAP = 100
 
 
 def _now_iso() -> str:
@@ -49,7 +54,8 @@ class Watcher:
     def __init__(self, root: Path, out_dir: Path, amf_dir, cdl_dir, fdl,
                  signer,
                  poll_interval: float, stable_seconds: float,
-                 validate_each: bool, quarantine_dir: Path):
+                 validate_each: bool, quarantine_dir: Path,
+                 emit_ale: bool = True):
         self.root           = root
         self.out_dir        = out_dir
         self.amf_dir        = amf_dir
@@ -60,11 +66,14 @@ class Watcher:
         self.stable_seconds = stable_seconds
         self.validate_each  = validate_each
         self.quarantine_dir = quarantine_dir
+        self.emit_ale       = emit_ale
 
         # path -> {"size": int, "mtime": float, "last_changed": float}
         self._seen: dict[str, dict] = {}
         # sha256 hashes of MHLs we've already emitted sidecars for
         self._processed: set[str] = set()
+        # Recent-emissions ring for the menu-bar app — {clipName, omcPath, signedAt, status}
+        self._emitted: list[dict] = []
         self._stats = {"mhls_processed": 0, "sidecars_written": 0,
                         "refreshed": 0, "conflicts": 0,
                         "validated_ok": 0, "quarantined": 0, "errors": 0}
@@ -77,15 +86,46 @@ class Watcher:
             try:
                 data = json.loads(STATE.read_text())
                 self._processed = set(data.get("processed_mhl_sha256", []))
-                _log("RESUME", f"{len(self._processed)} MHL(s) previously processed")
+                # `emitted` was added in v0.3.0; state files from older watchers
+                # default to [] so a rollback stays readable (plan §1.8 contract).
+                loaded_emitted = data.get("emitted") or []
+                if isinstance(loaded_emitted, list):
+                    self._emitted = loaded_emitted[-EMITTED_CAP:]
+                _log("RESUME", f"{len(self._processed)} MHL(s) previously processed, "
+                               f"{len(self._emitted)} recent emission(s)")
             except Exception:
                 pass
 
     def _save_state(self):
         STATE.write_text(json.dumps({
             "processed_mhl_sha256": sorted(self._processed),
-            "savedAt": _now_iso(),
+            "emitted":              self._emitted[-EMITTED_CAP:],
+            "savedAt":              _now_iso(),
         }, indent=2) + "\n")
+
+    def _record_emission(self, clip_name: str, omc_path: Path, status: str):
+        self._emitted.append({
+            "clipName": clip_name,
+            "omcPath":  str(omc_path),
+            "signedAt": _now_iso(),
+            "status":   status,
+        })
+        if len(self._emitted) > EMITTED_CAP:
+            del self._emitted[:-EMITTED_CAP]
+
+    def _emit_ale_row(self, sidecar_path: Path, signed: bool) -> None:
+        """ALE is a derived view of the sidecar; failures here must never
+        block sidecar emission. Logged WARN, swallowed."""
+        if not self.emit_ale:
+            return
+        try:
+            now = datetime.now(timezone.utc)
+            ale_path = ale_path_for_day(self.out_dir, now)
+            row = extract_row_from_sidecar(sidecar_path, now=now,
+                                           signed=signed, ale_dir=ale_path.parent)
+            update_ale(ale_path, row, now=now)
+        except Exception as e:
+            _log("ALE",  f"update failed for {sidecar_path.name}: {e}")
 
     # ---------- scan loop ----------
 
@@ -189,6 +229,8 @@ class Watcher:
                 _log("CONFLICT", f"{clip_abs.stem}: wrote {out.name} alongside existing "
                                    f"({self._stats['conflicts']} total)")
 
+            signed = True  # watcher just signed; presume good unless validator disagrees
+            emission_status = "signed"
             if self.validate_each:
                 ok, log = self._validate(out)
                 if ok:
@@ -197,6 +239,15 @@ class Watcher:
                 else:
                     self._quarantine(out, log)
                     self._stats["quarantined"] += 1
+                    signed = False
+                    emission_status = "quarantined"
+
+            # ALE + recent-emissions ring happen after validation so we record
+            # the true signed state. Failures inside either path are logged
+            # but must not block the next clip (plan §1.6).
+            if emission_status != "quarantined":
+                self._emit_ale_row(out, signed=signed)
+            self._record_emission(clip_abs.stem, out, emission_status)
 
         self._processed.add(mhl_sha)
         self._save_state()
@@ -295,6 +346,8 @@ def main():
     ap.add_argument("--signing-kid", default="dwc-dit-01")
     ap.add_argument("--no-validate", action="store_true",
                      help="Skip post-emit validation (faster, but silently admits broken sidecars)")
+    ap.add_argument("--no-emit-ale", dest="emit_ale", action="store_false",
+                     help="Disable per-day ALE emission (default: on — dwc-columns-YYYY-MM-DD.ale in out-dir)")
     ap.add_argument("--quarantine-dir", type=Path, default=None,
                      help="Where failed sidecars go (default: <out-dir>/../quarantine)")
     args = ap.parse_args()
@@ -320,7 +373,8 @@ def main():
     w = Watcher(root, args.out_dir, amf, cdl, fdl, signer,
                  args.interval, args.stable,
                  validate_each=not args.no_validate,
-                 quarantine_dir=quarantine)
+                 quarantine_dir=quarantine,
+                 emit_ale=args.emit_ale)
 
     def _stop(signum, frame):
         print()
