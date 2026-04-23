@@ -28,9 +28,9 @@ def _b64(b: bytes) -> str:
     return base64.b64encode(b).decode("ascii")
 
 
-def _iso_days(offset_days: int = 0) -> str:
-    dt = datetime.now(timezone.utc) + timedelta(days=offset_days)
-    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+def _iso_days(offset_days: int = 0, now: datetime | None = None) -> str:
+    base = now if now is not None else datetime.now(timezone.utc)
+    return (base + timedelta(days=offset_days)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _emit_keyring_entry(

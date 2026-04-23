@@ -1,0 +1,14 @@
+[Unit]
+Description=DWC sidecar watcher for {{watch_root}}
+After=default.target
+
+[Service]
+Type=simple
+ExecStart={{dwc_binary}} watch {{watch_root}}
+Environment=DWC_SIGNERS={{signers_path}}
+WorkingDirectory={{watch_root}}
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=default.target
