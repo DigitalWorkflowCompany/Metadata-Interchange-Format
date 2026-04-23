@@ -1,0 +1,29 @@
+{
+  "checks": [
+    {
+      "detail": "3.12.3 \u2265 3.11",
+      "remedy": "",
+      "status": "pass",
+      "title": "Python version"
+    },
+    {
+      "detail": "5 packages importable",
+      "remedy": "",
+      "status": "pass",
+      "title": "Required packages"
+    },
+    {
+      "detail": "expiring within 30d: dwc-dit-01 (14d remaining)",
+      "remedy": "Plan a rotation \u2014 keys are immutable once published",
+      "status": "warn",
+      "title": "Key expiry window"
+    },
+    {
+      "detail": "2 kid(s)",
+      "remedy": "",
+      "status": "pass",
+      "title": "keyring.json"
+    }
+  ],
+  "status": "warn"
+}

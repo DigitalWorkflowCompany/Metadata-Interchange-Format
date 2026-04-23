@@ -1,0 +1,23 @@
+{
+  "checks": [
+    {
+      "detail": "3.12.3 \u2265 3.11",
+      "remedy": "",
+      "status": "pass",
+      "title": "Python version"
+    },
+    {
+      "detail": "/production/keyring.json not found",
+      "remedy": "Run `dwc init` or copy keyring.json from your deployment",
+      "status": "fail",
+      "title": "keyring.json"
+    },
+    {
+      "detail": "could not verify \u2014 network unavailable",
+      "remedy": "If behind a proxy, check egress to ns.the-dwc.com",
+      "status": "warn",
+      "title": "Hosted schema drift"
+    }
+  ],
+  "status": "fail"
+}

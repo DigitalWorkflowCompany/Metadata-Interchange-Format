@@ -6,3 +6,10 @@ dist/
 
 .watch-state.json
 quarantine/
+
+# SwiftPM + Xcode build outputs (macos-statusbar/)
+.build/
+macos-statusbar/build/
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/

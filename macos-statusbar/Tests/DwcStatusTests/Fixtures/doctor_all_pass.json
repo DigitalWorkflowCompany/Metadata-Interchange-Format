@@ -1,0 +1,65 @@
+{
+  "checks": [
+    {
+      "detail": "3.12.3 \u2265 3.11",
+      "remedy": "",
+      "status": "pass",
+      "title": "Python version"
+    },
+    {
+      "detail": "5 packages importable",
+      "remedy": "",
+      "status": "pass",
+      "title": "Required packages"
+    },
+    {
+      "detail": "1 alg(s) referenced and available",
+      "remedy": "",
+      "status": "pass",
+      "title": "Hash algorithms"
+    },
+    {
+      "detail": "3 kid(s)",
+      "remedy": "",
+      "status": "pass",
+      "title": "keyring.json"
+    },
+    {
+      "detail": "all 3 referenced kid(s) within window",
+      "remedy": "",
+      "status": "pass",
+      "title": "Keyring validity windows"
+    },
+    {
+      "detail": "unset \u2014 will use JsonFileSigner against keys.priv.json",
+      "remedy": "",
+      "status": "pass",
+      "title": "Signer config (DWC_SIGNERS)"
+    },
+    {
+      "detail": "using keys.priv.json default (dev mode)",
+      "remedy": "",
+      "status": "pass",
+      "title": "Plaintext private keys"
+    },
+    {
+      "detail": "not present (no watcher running here)",
+      "remedy": "",
+      "status": "pass",
+      "title": ".watch-state.json"
+    },
+    {
+      "detail": "2 sidecar(s) parsed with a dwc.sidecar.* block",
+      "remedy": "",
+      "status": "pass",
+      "title": "Sidecar parse"
+    },
+    {
+      "detail": "no kids expire within 30d",
+      "remedy": "",
+      "status": "pass",
+      "title": "Key expiry window"
+    }
+  ],
+  "status": "pass"
+}

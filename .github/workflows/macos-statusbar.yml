@@ -1,0 +1,141 @@
+name: macos-statusbar
+
+# Builds + tests the menu-bar app on every push/PR that touches it.
+# On tagged releases, codesigns + notarizes + packages a DMG when the
+# Apple Developer secrets are set — see macos-statusbar/README.md for the
+# secret list. Forks without secrets still get a green build + test run.
+
+on:
+  push:
+    branches: [main]
+    tags:     ['v*-mac']
+    paths:
+      - 'macos-statusbar/**'
+      - 'tools/macos-statusbar/**'
+      - '.github/workflows/macos-statusbar.yml'
+  pull_request:
+    paths:
+      - 'macos-statusbar/**'
+      - 'tools/macos-statusbar/**'
+      - '.github/workflows/macos-statusbar.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: macos-14      # Apple Silicon + Xcode 15 by default
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Verify fixture sync
+        run: python3 tools/macos-statusbar/sync_fixtures.py --check
+
+      - name: Swift build
+        working-directory: macos-statusbar
+        run: swift build -c release
+
+      - name: Swift test
+        working-directory: macos-statusbar
+        run: swift test
+
+      - name: Package unsigned .app
+        working-directory: macos-statusbar
+        run: ./Scripts/make_app.sh
+        env:
+          APP_VERSION: ${{ github.ref_name }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DwcStatus-unsigned
+          path: macos-statusbar/build/DwcStatus.app
+          retention-days: 30
+
+  sign-and-release:
+    needs: build-and-test
+    # Only on tag pushes, and only when we have the Apple Developer secrets.
+    if: startsWith(github.ref, 'refs/tags/v') && endsWith(github.ref, '-mac')
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Apple Developer secrets
+        id: creds
+        run: |
+          if [ -n "${{ secrets.APPLE_DEVELOPER_ID_CERT_P12 }}" ] \
+             && [ -n "${{ secrets.APPLE_DEVELOPER_ID_CERT_PASSWORD }}" ] \
+             && [ -n "${{ secrets.APPLE_DEVELOPER_ID }}" ] \
+             && [ -n "${{ secrets.NOTARIZE_APPLE_ID }}" ] \
+             && [ -n "${{ secrets.NOTARIZE_TEAM_ID }}" ] \
+             && [ -n "${{ secrets.NOTARIZE_APP_PASSWORD }}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Apple Developer secrets missing — tag will not produce a signed DMG."
+          fi
+
+      - name: Import signing certificate
+        if: steps.creds.outputs.ready == 'true'
+        env:
+          CERT_P12: ${{ secrets.APPLE_DEVELOPER_ID_CERT_P12 }}
+          CERT_PW:  ${{ secrets.APPLE_DEVELOPER_ID_CERT_PASSWORD }}
+          KEYCHAIN_PW: dwc-ci-keychain-${{ github.run_id }}
+        run: |
+          echo "$CERT_P12" | base64 --decode > /tmp/cert.p12
+          security create-keychain -p "$KEYCHAIN_PW" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain  -p "$KEYCHAIN_PW" build.keychain
+          security set-keychain-settings -lut 21600 build.keychain
+          security import /tmp/cert.p12 -k build.keychain -P "$CERT_PW" \
+                          -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+                          -s -k "$KEYCHAIN_PW" build.keychain
+          rm /tmp/cert.p12
+
+      - name: Build + codesign .app
+        if: steps.creds.outputs.ready == 'true'
+        working-directory: macos-statusbar
+        env:
+          DEVELOPER_ID: ${{ secrets.APPLE_DEVELOPER_ID }}
+          APP_VERSION:  ${{ github.ref_name }}
+        run: ./Scripts/make_app.sh
+
+      - name: Notarize + staple
+        if: steps.creds.outputs.ready == 'true'
+        working-directory: macos-statusbar
+        env:
+          APPLE_ID:    ${{ secrets.NOTARIZE_APPLE_ID }}
+          TEAM_ID:     ${{ secrets.NOTARIZE_TEAM_ID }}
+          APP_PASSWORD:${{ secrets.NOTARIZE_APP_PASSWORD }}
+        run: |
+          APP=build/DwcStatus.app
+          ZIP=build/DwcStatus.zip
+          ditto -c -k --keepParent "$APP" "$ZIP"
+          xcrun notarytool submit "$ZIP" \
+              --apple-id  "$APPLE_ID" \
+              --team-id   "$TEAM_ID" \
+              --password  "$APP_PASSWORD" \
+              --wait
+          xcrun stapler staple "$APP"
+
+      - name: Build DMG
+        if: steps.creds.outputs.ready == 'true'
+        working-directory: macos-statusbar
+        run: |
+          brew install create-dmg
+          create-dmg \
+              --volname "DWC Sidecar Status" \
+              --window-size 540 340 \
+              --icon-size 96 \
+              --icon "DwcStatus.app" 140 170 \
+              --app-drop-link 400 170 \
+              "build/DwcStatus-${{ github.ref_name }}.dmg" \
+              "build/DwcStatus.app"
+
+      - name: Upload DMG to release
+        if: steps.creds.outputs.ready == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: macos-statusbar/build/DwcStatus-*.dmg

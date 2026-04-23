@@ -1,0 +1,27 @@
+{
+  "emitted": [
+    {
+      "clipName": "A001_C040_0420XY",
+      "omcPath": "/Volumes/Mag_A001/sidecars/A001_C040_0420XY.omc.json",
+      "signedAt": "2026-04-23T09:58:00Z",
+      "status": "signed"
+    },
+    {
+      "clipName": "A001_C041_0420ZA",
+      "omcPath": "/Volumes/Mag_A001/sidecars/A001_C041_0420ZA.omc.json",
+      "signedAt": "2026-04-23T09:59:11Z",
+      "status": "signed"
+    },
+    {
+      "clipName": "A001_C042_0420AB",
+      "omcPath": "/Volumes/Mag_A001/sidecars/A001_C042_0420AB.omc.json",
+      "signedAt": "2026-04-23T10:00:23Z",
+      "status": "signed"
+    }
+  ],
+  "processed_mhl_sha256": [
+    "9fdeaa4e1cb2c95b8db02c5e8e0a4f8b1e3a2c9e0b5d4a6f2e1c8d7b9f3a0e6b",
+    "a02bef85fe9131f7adc418cb6b38e6cf2395e4f1af14eba37cd1e0dcc8e2f3a0"
+  ],
+  "savedAt": "2026-04-23T10:00:24Z"
+}

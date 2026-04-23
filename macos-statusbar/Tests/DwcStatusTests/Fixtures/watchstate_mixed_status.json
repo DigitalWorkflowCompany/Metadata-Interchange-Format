@@ -1,0 +1,32 @@
+{
+  "emitted": [
+    {
+      "clipName": "A001_C042_0420AB",
+      "omcPath": "/x/A001_C042_0420AB.omc.json",
+      "signedAt": "2026-04-23T10:00:00Z",
+      "status": "signed"
+    },
+    {
+      "clipName": "A001_C043_0420CD",
+      "omcPath": "/x/A001_C043_0420CD.omc.json",
+      "signedAt": "2026-04-23T10:01:00Z",
+      "status": "quarantined"
+    },
+    {
+      "clipName": "A001_C044_0420EF",
+      "omcPath": "/x/A001_C044_0420EF.omc.json",
+      "signedAt": "2026-04-23T10:02:00Z",
+      "status": "signed"
+    },
+    {
+      "clipName": "A001_C045_0420GH",
+      "omcPath": "/x/A001_C045_0420GH.omc.json",
+      "signedAt": "2026-04-23T10:03:00Z",
+      "status": "quarantined"
+    }
+  ],
+  "processed_mhl_sha256": [
+    "1111111111111111111111111111111111111111111111111111111111111111"
+  ],
+  "savedAt": "2026-04-23T10:03:01Z"
+}
