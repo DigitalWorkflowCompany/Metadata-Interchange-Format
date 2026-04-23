@@ -1,10 +1,11 @@
 """`dwc <subcommand>` dispatcher — routes to each module's main()."""
 import sys
 
-from . import validate, bootstrap, batch, mhl_walker, watch, sign_example, keygen, init
+from . import validate, bootstrap, batch, mhl_walker, watch, sign_example, keygen, init, doctor
 
 COMMANDS = {
     "init":         (init,         "One-command onboarding: key + keyring + signers + launch unit"),
+    "doctor":       (doctor,       "Pre-flight audit of a production signing host"),
     "validate":     (validate,     "Validate a sidecar through 9 stages"),
     "bootstrap":    (bootstrap,    "Produce a signed sidecar by re-reading clip bytes"),
     "batch":        (batch,        "Batch-produce sidecars (audit mode, re-hashes each clip)"),
