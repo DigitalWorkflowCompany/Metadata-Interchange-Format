@@ -1,5 +1,11 @@
+-- sst: ingest
 -- apply_dwc_metadata.lua
 -- DWC sidecar → Silverstack custom metadata (Silverstack 9.2+)
+--
+-- The first line above is the Pomfort context tag — without it
+-- Silverstack does not list the script in the "Metadata Adjustment
+-- Scripts" dropdown of the Register in Library activity. Verified
+-- 2026-04-24 against Silverstack XT 9.2.1 during the §7.1 dry-run.
 --
 -- This script runs inside Silverstack's embedded Lua 5.5 runtime. At
 -- ingest time the onStampVideo hook fires per-clip; we look for
@@ -25,10 +31,18 @@
 -- (Preferences → Scripts → edit), paste this file into the Shared
 -- scope, and save. See integrations/silverstack/README.md for detail.
 --
--- Helpers are exposed on a module-scope `dwc` table so the Python
--- test harness can exercise them without a live Silverstack.
+-- Helpers are kept on a module-scope `dwc` table that is captured as an
+-- upvalue by `onStampVideo` / `onFinish`. The table is deliberately
+-- `local`, not a global: Silverstack's script sandbox evidently disposes
+-- or re-chains `_ENV` between script load and hook fire, so any global
+-- created at script load (e.g. `dwc = {}`) becomes unreachable at hook
+-- time and throws `'__index' chain too long; possible loop`. Verified
+-- against Silverstack XT 9.2.1 on 2026-04-24 during the §7.1 dry-run.
+-- The Python test harness (tests/test_silverstack_script.py) only talks
+-- to the script via the `onStampVideo` global, so making `dwc` local
+-- has no effect there.
 
-dwc = {}
+local dwc = {}
 
 -- ── JSON decoding ───────────────────────────────────────────────────────
 -- Prefer Pomfort-bundled dkjson if available; fall back to the minimal
@@ -286,11 +300,14 @@ function onStampVideo(videoClip, clipIndex, resource)
     -- clipIndex unused; signature kept complete per Pomfort convention.
     local _ = clipIndex
 
+    -- FileResource exposes its on-disk path via `:getPath()` per the
+    -- Pomfort SDK reference (Silverstack 9.2.0 Lua API, § FileResource).
+    -- Accessing a non-existent method name triggers Silverstack's
+    -- metatable fallback which manifests as '__index chain too long' —
+    -- so use the documented name rather than a guess.
     local clip_path = nil
-    if resource ~= nil and resource.path ~= nil then
-        -- FileResource exposes its path via a method — no-arg getter in
-        -- the Pomfort idiom (see: Extract Camera from Clip Name.lua).
-        local ok_call, path = pcall(resource.path, resource)
+    if resource ~= nil then
+        local ok_call, path = pcall(function() return resource:getPath() end)
         if ok_call and type(path) == "string" then clip_path = path end
     end
     if clip_path == nil then

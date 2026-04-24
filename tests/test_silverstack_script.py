@@ -37,8 +37,8 @@ def _write_harness(tmp_path: Path) -> Path:
     harness = tmp_path / "harness.lua"
     harness.write_text(dedent(r"""
         -- arg[1]: path to apply_dwc_metadata.lua
-        -- arg[2]: clip path passed to resource:path()
-        -- arg[3]: empty or "<missing>" to make the harness omit resource.path
+        -- arg[2]: clip path passed to resource:getPath()
+        -- arg[3]: empty or "<missing>" to make the harness omit resource:getPath
 
         local script_path = arg[1]
         local clip_path   = arg[2]
@@ -58,7 +58,7 @@ def _write_harness(tmp_path: Path) -> Path:
 
         local resource = {}
         if path_mode ~= "missing" then
-            function resource:path() return clip_path end
+            function resource:getPath() return clip_path end
         end
 
         -- Load the real script; its top-level code wires hooks as globals
