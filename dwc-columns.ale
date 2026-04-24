@@ -1,0 +1,15 @@
+Heading
+FIELD_DELIM	TABS
+VIDEO_FORMAT	1080
+AUDIO_FORMAT	48khz
+FPS	24
+
+Column
+Name	Tape	Start	End	DWC_Signed	DWC_Kid	DWC_Events	DWC_Locks	DWC_LockedBy	DWC_LastVerified	DWC_SidecarPath	DWC_ChainHead
+
+Data
+A001_C042_0420AB	A001	01:00:12:03	01:00:18:17	true	dwc-post-01	3	1	dwc-post-01	2026-04-23T10:00:00Z	sidecars/A001_C042_0420AB.omc.json	60aadd4ffa6e
+A001_C043_0420CD	A001	01:00:20:00	01:00:25:12	true	dwc-dit-01	1	0		2026-04-23T10:00:05Z	sidecars/A001_C043_0420CD.omc.json	a92f14b7e9d3
+A002_Café_0420EF	A002	01:00:30:00	01:00:45:00	true	dwc-color-01	2	0		2026-04-23T10:00:10Z	sidecars/A002_Cafe_0420EF.omc.json	7c8d02a1ff4e
+A002_C001_260115_R1AB	A002	02:00:00:00	02:00:05:00	false	dwc-dit-01	1	0		2026-04-23T10:00:15Z	sidecars/A002_C001_260115_R1AB.omc.json	d1e2f3c4b5a6
+A003_C001_0420GH	A003	03:00:00:00	03:00:12:00	true	dwc-post-01	4	1	dwc-post-01	2026-04-23T10:00:20Z	sidecars/A003_C001_0420GH.omc.json	9b8a7c6d5e4f
