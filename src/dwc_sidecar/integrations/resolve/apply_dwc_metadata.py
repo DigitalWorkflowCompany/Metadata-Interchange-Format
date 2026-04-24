@@ -349,9 +349,11 @@ def run(sidecar_dir: Path, *, now: datetime | None = None,
         print()
         print("Some DWC_* fields returned SetMetadata=False — they aren't "
               "configured as custom metadata in this project.", file=sys.stderr)
-        print("Add via Project Settings → General Options → Metadata & Scene, "
-              "or run ensure_custom_fields.py for the setup walk-through.",
-              file=sys.stderr)
+        print("Add them via the Metadata inspector's three-dot menu → "
+              "Create Custom Metadata (Resolve 20.2+). On older Resolve, "
+              "use Project Settings → General Options → Metadata & Scene. "
+              "Run `python3 -m dwc_sidecar.integrations.resolve.ensure_custom_fields` "
+              "for the full walk-through.", file=sys.stderr)
         print(f"Missing fields: {sorted(all_missing)}", file=sys.stderr)
     print(f"Applied metadata to {applied} clip(s).")
     return 0

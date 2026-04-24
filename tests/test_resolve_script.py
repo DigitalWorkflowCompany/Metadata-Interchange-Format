@@ -260,7 +260,7 @@ def test_run_end_to_end_writes_metadata(tmp_path, capsys):
     assert clips[2].calls == []
 
 
-def test_run_reports_missing_project_settings(tmp_path, capsys):
+def test_run_reports_missing_custom_fields(tmp_path, capsys):
     sc = tmp_path / "X.omc.json"
     sc.write_text(json.dumps(_sidecar_doc()))
     clip = _MockMediaPoolItem("X", fail_keys={"DWC_ChainHead"})
@@ -269,7 +269,9 @@ def test_run_reports_missing_project_settings(tmp_path, capsys):
     rc = apply.run(tmp_path, now=NOW, resolve_obj=mock_resolve)
     assert rc == 0
     err = capsys.readouterr().err
-    assert "Metadata & Scene" in err
+    # Mentions the Resolve 20.2+ UI surface and the helper command
+    assert "Create Custom Metadata" in err
+    assert "ensure_custom_fields" in err
     assert "DWC_ChainHead" in err
 
 
@@ -304,7 +306,10 @@ def test_ensure_custom_fields_message_lists_all_eight():
     msg = ensure_custom_fields.format_setup_message()
     for f in apply.DWC_FIELDS:
         assert f in msg
-    # Points DITs at the right Project Settings submenu
+    # Points DITs at the Resolve 20.2+ Metadata-inspector surface
+    # and still mentions the pre-20.2 location as a fallback for
+    # operators on older installs.
+    assert "Create Custom Metadata" in msg
     assert "Metadata & Scene" in msg
 
 
