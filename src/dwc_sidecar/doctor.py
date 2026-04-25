@@ -510,8 +510,14 @@ def check_key_expiry_window(keyring_path: Path, now: datetime, *,
 
 
 def _default_fetch_url(url: str) -> bytes:
+    # Cloudflare's bot-protection 403s the default Python-urllib UA, so send
+    # an identifiable one. Kept in sync with .github/workflows/hosted-schema-drift.yml.
     import urllib.request
-    with urllib.request.urlopen(url, timeout=15) as r:
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "DWC-sidecar/0.1 "
+                      "(+https://github.com/DigitalWorkflowCompany/Metadata-Interchange-Format)",
+    })
+    with urllib.request.urlopen(req, timeout=15) as r:
         return r.read()
 
 

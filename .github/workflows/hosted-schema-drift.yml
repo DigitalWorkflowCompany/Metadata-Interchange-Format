@@ -28,13 +28,18 @@ jobs:
           BASE  = "https://ns.the-dwc.com/sidecar/v0.1"
           FILES = ["artifacts.schema.json", "events.schema.json", "locks.schema.json"]
           REPO  = Path("src/dwc_sidecar/data/schemas")
+          # Cloudflare's bot-protection 403s the default Python-urllib UA, so
+          # send an identifiable one. Doctor's _default_fetch_url uses the
+          # same string — keep them in sync.
+          UA    = "DWC-sidecar/0.1 (+https://github.com/DigitalWorkflowCompany/Metadata-Interchange-Format)"
 
           fails = 0
           for name in FILES:
               local = (REPO / name).read_bytes()
               lh    = hashlib.sha256(local).hexdigest()
+              req   = urllib.request.Request(f"{BASE}/{name}", headers={"User-Agent": UA})
               try:
-                  with urllib.request.urlopen(f"{BASE}/{name}", timeout=15) as r:
+                  with urllib.request.urlopen(req, timeout=15) as r:
                       hosted = r.read()
               except urllib.error.HTTPError as e:
                   if e.code == 404:
