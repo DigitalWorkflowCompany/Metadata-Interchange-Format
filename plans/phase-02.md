@@ -44,10 +44,10 @@ Silverstack ≤ 9.1**. See §1.1b for the revised design.
 
 ### Post-real-app-validation findings (2026-04-26)
 
-The §7.1 dry-runs uncovered three vendor-side facts that the original plan
-overestimated, and one that exceeded expectations. All four affect §7.1's ALE
-exit criterion specifically; the scripting-track exit criteria for Silverstack
-and Resolve were met as written.
+The §7.1 dry-runs uncovered five vendor-side facts that the original plan
+got wrong in either direction. All affect §7.1's ALE exit criterion; the
+scripting-track exit criteria for Silverstack and Resolve were met as
+written.
 
 1. **Silverstack XT 9.2.1 sandbox quirks** (resolved). The `apply_dwc_metadata.lua`
    script needed four real-app fixes to run under Silverstack's sandbox: a
@@ -78,11 +78,30 @@ and Resolve were met as written.
    producer-side workflow neighbor in `docs/integration/shotput.md`. A future
    ShotPut Pro release that adds ALE import would bring this back into scope
    but does not block the phase.
+5. **Avid Media Composer 24.10.0 imports the DWC ALE cleanly via merge**
+   (resolved). Eight `DWC_*` columns survive transit and populate the Avid
+   bin view after a Tape Name + Start TC merge against existing master clips.
+   Avid case-normalises column names (`DWC_Signed` → `Dwc_signed`); the
+   14-char-truncation folklore is **not** a hard rule in 2024 — `Dwc_lastverified`
+   (16 chars) and `Dwc_sidecarpath` (15 chars) come through in full. Resolves
+   §8 open question #1. Documented in `docs/integration/avid.md`. Avid §7.1
+   track **closed**.
 
-Net effect on §7.1: ALE-track exit criterion now reads "validated against
-**Avid Media Composer** (the canonical ALE consumer) with optional vendor-side
-display in YoYotta if Martin's allowlist change ships". Avid validation is
-still pending. ShotPut Pro is documented and descoped.
+Two follow-ups carried out of the dry-run sprint:
+
+- **Emitter `Start = End = 01:00:00:00` placeholder for tc-less sidecars.**
+  Produces ALEs Avid rejects with "out point ≤ in point" before any merge can
+  run. Real production sidecars carry real timecode and don't hit this; the
+  edge case affects the stub corpus and any sidecar emitted before clip TC is
+  populated. Fix: default `End = Start + 1` frame minimum. Tracked under §10.
+- **Avid case normalisation affects round-trip identity.** A downstream tool
+  that reads metadata back from an Avid export ALE has to match
+  case-insensitively on the `dwc_` prefix. Worth a one-paragraph note in the
+  ALE emitter README before v0.3.0 ships.
+
+Net effect on §7.1: ALE-track exit criterion **met** against Avid (the
+canonical ALE consumer), with optional vendor-side display in YoYotta if
+Martin's allowlist change ships. ShotPut Pro is documented and descoped.
 
 ---
 
@@ -1469,10 +1488,13 @@ field set defined in §1.4. The `validate_as_json()` refactor (phase-opening
 
 ## 8. Open questions
 
-1. **ALE column naming.** `DWC_Signed` vs `DWC.Signed` vs `Dwc_Signed` —
-   Avid reserves `.` in some contexts. Going with underscore throughout;
-   confirm before v0.3.0 by testing against a live Avid Media Composer
-   (also covered by the spike in §1.1a).
+1. **ALE column naming** *(resolved 2026-04-26)*. Underscore throughout
+   (`DWC_Signed`) is the right call. Verified against Avid Media Composer
+   24.10.0.58607: all eight names survive ALE merge; the >14-char names
+   (`DWC_LastVerified`, `DWC_SidecarPath`) come through intact, so the
+   14-char truncation folklore is not a hard rule in 2024. Avid case-
+   normalises to `Dwc_signed`; the underlying data is preserved.
+   Documented in `docs/integration/avid.md`.
 2. **Menu-bar app bundle identifier.** Propose `com.the-dwc.sidecar.status`
    (matches the `ns.the-dwc.com` schema authority).
 3. **Web validator domain.** `validate.the-dwc.com` vs
