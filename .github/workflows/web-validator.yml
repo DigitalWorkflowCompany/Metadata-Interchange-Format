@@ -53,8 +53,9 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    # Only deploy from main, and only when the Cloudflare secrets are set.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Only deploy from main (push or manual dispatch), and only when the
+    # Cloudflare secrets are set (gated below in the deploy step itself).
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     steps:
       - uses: actions/checkout@v4
 
