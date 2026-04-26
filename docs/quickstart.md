@@ -122,7 +122,7 @@ Pass `--check-hosted` to additionally byte-compare your local schemas against th
 ## Where to go next
 
 - **Per-tool integrations** — `docs/integration/`. Silverstack 9.2+ (Lua), DaVinci Resolve 20/21 (Python), Avid Media Composer (ALE merge). Each doc has install steps + screenshots.
-- **Operations reference** — `docs/operations/` (forthcoming): deeper detail on `dwc doctor`, `dwc watch`, and the signer-backend matrix.
+- **Operations reference** — `docs/operations/`: deeper detail on [`dwc doctor`](operations/doctor.md), [`dwc watch`](operations/watch.md), and the [signer-backend matrix](operations/signer-backends.md).
 - **Architecture and conventions** — [`CLAUDE.md`](../CLAUDE.md): the 9-stage validator, the OMC composition strategy, hash registry, and the conventions a contributor should follow.
 - **Schemas** — <https://ns.the-dwc.com/sidecar/v0.1/>. Immutable per version.
 
