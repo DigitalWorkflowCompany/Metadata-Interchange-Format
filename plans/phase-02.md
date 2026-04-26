@@ -42,6 +42,48 @@ and Resolve, native scripting gives direct per-clip writes. ALE remains the
 integration path for **YoYotta ID, ShotPut Pro, Avid Media Composer, and
 Silverstack ≤ 9.1**. See §1.1b for the revised design.
 
+### Post-real-app-validation findings (2026-04-26)
+
+The §7.1 dry-runs uncovered three vendor-side facts that the original plan
+overestimated, and one that exceeded expectations. All four affect §7.1's ALE
+exit criterion specifically; the scripting-track exit criteria for Silverstack
+and Resolve were met as written.
+
+1. **Silverstack XT 9.2.1 sandbox quirks** (resolved). The `apply_dwc_metadata.lua`
+   script needed four real-app fixes to run under Silverstack's sandbox: a
+   `-- sst: ingest` context tag, a `local dwc` table captured as a closure
+   upvalue (script-level globals are unreachable from hook bodies), the
+   documented `:getPath()` method (not the assumed `:path()`), and explicit
+   workflow-attachment via the Register-in-Library activity. All recorded in
+   `src/dwc_sidecar/integrations/silverstack/README.md` and in commit
+   `ca50e93`. Silverstack §7.1 closed end-to-end.
+2. **Resolve 20.3.2 + 21 API parity** (favourable). The `MediaPoolItem` /
+   `MediaPool` / `ProjectManager` surface this integration uses is
+   byte-identical between the Resolve 20 and 21 vendor READMEs (only Fairlight
+   additions differ). Validating against Resolve 20 covers 21 — the original
+   §7.1 ask for two trial runs on two machines is redundant. Recorded in
+   commit `b33382d`. Resolve §7.1 closed end-to-end.
+3. **YoYotta ALE-import column allowlist.** YoYotta consumes ALE imports
+   only against a fixed allowlist of recognised column names (Production,
+   Vendor, Season, Episode, ShootDay, ShootDate, TransferDate, Batch, Scene,
+   Take, Shot, Name, MD5, xxHash). DWC_* columns import without error but
+   silently disappear from the UI. Vendor brief sent to YoYotta CTO Martin
+   on 2026-04-25 requesting allowlist extension; track is **blocked-on-vendor**
+   pending response. See `docs/integration/yoyotta-vendor-request.md`.
+4. **ShotPut Pro has no ALE-import surface.** ShotPut Pro is a producer-side
+   offload tool with no metadata-import feature category — manuals confirm,
+   2025 demo confirms. The §7.1 criterion as written is impossible by product
+   design (not a vendor allowlist or configuration issue). Track **descoped**
+   per §7.1's own escape hatch; the ShotPut Pro integration is reframed as a
+   producer-side workflow neighbor in `docs/integration/shotput.md`. A future
+   ShotPut Pro release that adds ALE import would bring this back into scope
+   but does not block the phase.
+
+Net effect on §7.1: ALE-track exit criterion now reads "validated against
+**Avid Media Composer** (the canonical ALE consumer) with optional vendor-side
+display in YoYotta if Martin's allowlist change ships". Avid validation is
+still pending. ShotPut Pro is documented and descoped.
+
 ---
 
 Scope: ship the five highest-leverage usability wins identified in the
