@@ -87,17 +87,19 @@ written.
    §8 open question #1. Documented in `docs/integration/avid.md`. Avid §7.1
    track **closed**.
 
-Two follow-ups carried out of the dry-run sprint:
+Two follow-ups carried out of the dry-run sprint, both **resolved 2026-04-26**:
 
 - **Emitter `Start = End = 01:00:00:00` placeholder for tc-less sidecars.**
-  Produces ALEs Avid rejects with "out point ≤ in point" before any merge can
-  run. Real production sidecars carry real timecode and don't hit this; the
-  edge case affects the stub corpus and any sidecar emitted before clip TC is
-  populated. Fix: default `End = Start + 1` frame minimum. Tracked under §10.
+  Produced ALEs Avid rejected with "out point ≤ in point" before any merge
+  could run. Resolved by defaulting `End = 01:00:00:01` (one frame after
+  Start at any common FPS). Real production sidecars with timecode metadata
+  override these placeholders and are unaffected. Regression-guarded by
+  `tests/test_ale_emitter.py::test_extract_row_placeholder_end_is_after_start`.
 - **Avid case normalisation affects round-trip identity.** A downstream tool
   that reads metadata back from an Avid export ALE has to match
-  case-insensitively on the `dwc_` prefix. Worth a one-paragraph note in the
-  ALE emitter README before v0.3.0 ships.
+  case-insensitively on the `dwc_` prefix. Documented in
+  `src/dwc_sidecar/ale_emitter.py` module docstring and
+  `docs/integration/avid.md`.
 
 Net effect on §7.1: ALE-track exit criterion **met** against Avid (the
 canonical ALE consumer), with optional vendor-side display in YoYotta if
