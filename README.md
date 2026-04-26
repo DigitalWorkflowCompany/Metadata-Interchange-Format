@@ -15,6 +15,8 @@ dwc init
 
 `dwc init` walks you through generating a signing key (macOS Keychain or file-backed), writes `keyring.json` + `signers.json`, and installs a LaunchAgent (macOS) or systemd user unit (Linux) so `dwc watch` starts at login.
 
+For a from-scratch walk-through with prerequisites, expected `dwc doctor` output, and "where to go next" pointers, see [`docs/quickstart.md`](docs/quickstart.md).
+
 ## Subcommands
 
 | Command         | What it does                                                          |
