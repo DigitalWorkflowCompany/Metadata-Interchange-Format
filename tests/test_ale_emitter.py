@@ -86,6 +86,21 @@ def test_extract_row_empty_events_and_locks(tmp_path):
     assert row["DWC_ChainHead"]  == ""
 
 
+def test_extract_row_placeholder_end_is_after_start(tmp_path):
+    """Avid rejects rows where End <= Start with "out point ≤ in point";
+    the placeholder must produce a non-zero duration so tc-less sidecars
+    still merge against existing bin clips. See docs/integration/avid.md."""
+    sc = _write_sidecar(tmp_path, "A001_C042_0420AB")
+    row = ale_emitter.extract_row_from_sidecar(sc, now=NOW, signed=True,
+                                                ale_dir=tmp_path)
+    assert row["Start"] == "01:00:00:00"
+    assert row["End"]   == "01:00:00:01"
+    # Stronger invariant: End must be strictly greater than Start, however
+    # the values are formatted, so future formatting changes don't silently
+    # regress to End == Start.
+    assert row["End"] > row["Start"]
+
+
 def test_tape_regex_matches_a_cam_prefix():
     assert ale_emitter.tape_from_name("A001_C042_0420AB")   == "A001"
     assert ale_emitter.tape_from_name("A002C001_260115")    == "A002"

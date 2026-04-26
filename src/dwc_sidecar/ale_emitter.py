@@ -27,11 +27,24 @@ File layout, crash-safety, dedup semantics:
 - Values sanitised for tab/CR/LF (review #3/#4) — a stray tab would shift
   every following column; an embedded line-ending would split the row.
 
-Start/End timecode columns default to ``01:00:00:00`` placeholders. OMC
-v2.8's ``functionalCharacteristics.timecode`` isn't populated in our
-stub corpus, and DIT tools re-derive timecode from the clip itself at
-import. A real deployment with timecode metadata can override these via
-``dwc ale-export --tape`` and future per-column overrides.
+Start/End timecode columns default to ``01:00:00:00`` / ``01:00:00:01``
+placeholders (one frame apart). OMC v2.8's
+``functionalCharacteristics.timecode`` isn't populated in our stub corpus,
+and DIT tools re-derive timecode from the clip itself at import — but
+Avid Media Composer 24.x rejects rows where ``End ≤ Start`` with
+"out point ≤ in point" before the merge can run, so the placeholder
+duration must be non-zero. A one-frame offset is the minimum that
+satisfies Avid at any common frame rate. Production sidecars with real
+timecode can override these via ``dwc ale-export`` and future per-column
+overrides.
+
+Avid Media Composer 24.x also case-normalises custom column names on
+import: ``DWC_Signed`` is stored and displayed as ``Dwc_signed``
+(Title-case prefix, lowercase suffix). The underlying data is preserved;
+only the surface label changes. Any downstream system that reads metadata
+back from an Avid-exported ALE must match case-insensitively on the
+``dwc_`` prefix to keep round-trip identity. Verified against Media
+Composer 24.10.0; see ``docs/integration/avid.md``.
 """
 import argparse
 import json
@@ -165,8 +178,11 @@ def extract_row_from_sidecar(
     return {
         "Name":             name,
         "Tape":             tape_from_name(name),
+        # End must be strictly greater than Start or Avid Media Composer
+        # rejects the row at merge with "out point ≤ in point". One-frame
+        # offset is the minimum that satisfies the check at any common FPS.
         "Start":            "01:00:00:00",
-        "End":              "01:00:00:00",
+        "End":              "01:00:00:01",
         "DWC_Signed":       "true" if signed else "false",
         "DWC_Kid":          latest_kid,
         "DWC_Events":       str(len(events)),
