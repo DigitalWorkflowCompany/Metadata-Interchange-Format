@@ -1,9 +1,3 @@
-# YoYotta — request to add DWC columns to the ALE import allowlist
-
-A brief intended for sharing with Martin (YoYotta CTO). Drafted 2026-04-25 after a dry-run confirmed YoYotta currently consumes ALEs containing DWC columns silently, with no surface in the UI.
-
----
-
 ## The ask
 
 Add eight column names to YoYotta's ALE-import allowlist so that DWC provenance metadata becomes visible alongside imported clips:
@@ -33,7 +27,7 @@ DWC has already shipped native script integrations for Pomfort Silverstack 9.2+ 
 | `DWC_SidecarPath`  | filename            | `A001_C042_0420AB.omc.json`    | The sidecar file alongside the clip on disk; useful for round-trip.      |
 | `DWC_ChainHead`    | 12-hex-char string  | `60aadd4ffa6e`                 | First 12 hex of the tip-event hash; serves as a short chain identifier.  |
 
-All values are plain strings in the ALE (Avid Log Exchange is text-only), so YoYotta can treat them as Text columns — no type-aware parsing required.
+All values are plain strings in the ALE, so YoYotta can treat them as Text columns — no type-aware parsing required.
 
 ## Sample ALE (current emitter output, one clip)
 
@@ -67,6 +61,3 @@ If the column names need namespacing differently for YoYotta's internal storage 
 - The eight columns and their derivation are defined in `src/dwc_sidecar/ale_emitter.py` and exercised by `tests/test_ale_emitter.py` in that repo.
 - Reference corpus (Sony VENICE, 40 clips, MHL v1 + AMF v2.0 + FDL v2.0 + ASC CDL v1.2) available on request.
 
-## Contact
-
-Adam Shell — adam@the-dwc.com
