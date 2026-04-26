@@ -28,7 +28,7 @@ PYODIDE_VERSION = "0.27.3"
 HERE    = Path(__file__).resolve().parent
 REPO    = HERE.parent.parent
 DIST    = HERE / "dist"
-STATIC  = ("index.html", "app.js", "app.css")
+STATIC  = ("index.html", "app.js", "app.css", "_headers")
 
 
 def build_wheel(out_dir: Path) -> Path:

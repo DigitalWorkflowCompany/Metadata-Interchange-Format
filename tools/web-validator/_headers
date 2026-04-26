@@ -1,0 +1,20 @@
+# Cloudflare Pages headers for the dwc-validator project.
+#
+# Cache strategy: long-cache only the version-suffixed wheel (its name
+# changes on every release, so it's safe to mark immutable). Everything
+# else (index.html, app.js, app.css, manifest.json) revalidates often
+# so a deployed fix reaches users without manual cache-bust.
+#
+# Cloudflare Pages applies the LAST matching rule when headers collide,
+# so the most-specific rules go at the bottom.
+
+# Default: short cache, revalidate. Index pages, JS, CSS, manifest.
+/*
+  Cache-Control: public, max-age=300
+
+# Versioned wheel: immutable, fully cacheable. Filename includes the
+# package version (dwc_sidecar-X.Y.Z-py3-none-any.whl) so a new release
+# changes the path and the old cached entry is naturally orphaned.
+/*.whl
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
