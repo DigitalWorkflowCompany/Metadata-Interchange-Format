@@ -108,7 +108,10 @@ async function loadPyodideCached() {
     const pyodide = await window.loadPyodide({ indexURL: PYODIDE_INDEX });
 
     setStatus("Installing packages…");
-    await pyodide.loadPackage(["micropip", "jsonschema", "cryptography", "xxhash"]);
+    // pyyaml is needed by mhl.py (Stage 8 — MHL v2 is YAML); blake3 is
+    // intentionally not pre-loaded — Pyodide has no wheel for it, and
+    // canonical.py imports it lazily so other algorithms still work.
+    await pyodide.loadPackage(["micropip", "jsonschema", "cryptography", "xxhash", "pyyaml"]);
 
     setStatus("Installing DWC validator…");
     const manifest = await (await fetch("manifest.json")).json();
@@ -117,10 +120,13 @@ async function loadPyodideCached() {
     const wheelBytes = new Uint8Array(await wheelResp.arrayBuffer());
     pyodide.FS.writeFile(`/tmp/${manifest.wheel}`, wheelBytes);
 
+    // deps=False on the wheel install skips transitive resolution.
+    // The wheel declares blake3>=0.4, which has no Pyodide wheel; all
+    // other deps are pre-loaded above or installed explicitly here.
     await pyodide.runPythonAsync(`
       import micropip
       await micropip.install('rfc8785')
-      await micropip.install('emfs:/tmp/${manifest.wheel}')
+      await micropip.install('emfs:/tmp/${manifest.wheel}', deps=False)
     `);
 
     setStatus("Ready. Drop a sidecar to validate.");
