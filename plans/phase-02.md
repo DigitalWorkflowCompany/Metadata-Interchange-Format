@@ -1497,8 +1497,13 @@ field set defined in §1.4. The `validate_as_json()` refactor (phase-opening
    14-char truncation folklore is not a hard rule in 2024. Avid case-
    normalises to `Dwc_signed`; the underlying data is preserved.
    Documented in `docs/integration/avid.md`.
-2. **Menu-bar app bundle identifier.** Propose `com.the-dwc.sidecar.status`
-   (matches the `ns.the-dwc.com` schema authority).
+2. **Menu-bar app bundle identifier** *(resolved 2026-04-26)*. Decided
+   `com.the-dwc.sidecar.status` — matches the `ns.the-dwc.com` schema
+   authority, mirrors the underscore-aware `dwc.sidecar.*` customData
+   domain naming, and is already in `macos-statusbar/Scripts/make_app.sh`
+   and the bundled `Info.plist`. No further plan-level question; the ID
+   is the App ID to register with Apple when the Developer Program
+   membership activates (see `macos-statusbar/RELEASE.md`).
 3. **Web validator domain.** `validate.the-dwc.com` vs
    `ns.the-dwc.com/validate` — subdomain is cleaner but needs a DNS
    record. Decide before §4 ships.
