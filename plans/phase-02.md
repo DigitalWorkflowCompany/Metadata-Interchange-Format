@@ -1504,9 +1504,19 @@ field set defined in §1.4. The `validate_as_json()` refactor (phase-opening
    and the bundled `Info.plist`. No further plan-level question; the ID
    is the App ID to register with Apple when the Developer Program
    membership activates (see `macos-statusbar/RELEASE.md`).
-3. **Web validator domain.** `validate.the-dwc.com` vs
-   `ns.the-dwc.com/validate` — subdomain is cleaner but needs a DNS
-   record. Decide before §4 ships.
+3. **Web validator domain** *(resolved 2026-04-26)*. Decided
+   `validate.the-dwc.com` (subdomain) over `ns.the-dwc.com/validate`
+   (path). Two factors drove it: (a) the validator's ~10 MB
+   Pyodide + WASM bundle benefits from long-cache on the version-
+   suffixed wheel, and a fresh Cloudflare Pages project lets us set
+   that without inheriting the `max-age=300` clamp observed on
+   `dwc-schemas` (memory: `project_cache_control_limitation.md`);
+   (b) decoupling validator-URL lifetime from the schema host's
+   immutable URLs — `ns.the-dwc.com/...` is contractually frozen,
+   `validate.the-dwc.com` can be repointed/replatformed freely. DNS
+   work is a single CNAME at the apex zone. One-time setup runbook
+   at `tools/web-validator/DEPLOY.md`; cache rules at
+   `tools/web-validator/_headers`.
 4. **Key expiry policy default.** 90 days (from `dwc init`) is a guess.
    Realistic DIT engagement is 8–20 weeks per show. A per-show key with
    a rotation ceremony at wrap might be the better default. Revisit
