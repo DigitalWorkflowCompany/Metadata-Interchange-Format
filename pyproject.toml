@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 
 [project]
 name            = "dwc-sidecar"
-version         = "0.2.0"
+version         = "0.3.0"
 description     = "Reference implementation of the DWC per-clip metadata sidecar format — composes with MovieLabs OMC v2.8."
 requires-python = ">=3.10"
 authors         = [{ name = "Digital Workflow Company", email = "adam@the-dwc.com" }]
