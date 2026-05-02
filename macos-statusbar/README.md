@@ -86,9 +86,7 @@ Homebrew cask ships alongside the 1.0.0-mac tag: `brew install --cask dwc-sideca
 
 - The **Install LaunchAgent** prompt on first launch isn't implemented — a DIT who wants auto-start at login currently wires the plist manually. Follow-up: reuse `dwc init`'s launchagent template under `src/dwc_sidecar/data/templates/`.
 - SwiftUI previews (plan §3.8) aren't committed. `MenuBarExtra` previews require Xcode's Preview Canvas; they don't run from the SwiftPM test target. A contributor can add `#Preview` blocks in Xcode without touching the core code.
-- **Notarization CI has never run green end-to-end** — it's written against the standard `codesign` + `xcrun notarytool` flow but unexercised until the Apple Developer secrets exist. Expect the first release cycle to iterate on CI tuning.
 
 ## UNVERIFIED
 
-- Whether GitHub Actions macOS runners reliably build SwiftPM `MenuBarExtra` apps. Plan §3.9 flagged this; the workflow runs `swift build` + `swift test` which are known to work, but the `codesign` + `notarytool` paths need a live dry-run.
-- Icon legibility on Intel Macs with Monterey menu bars — the 12×12 filled circle was sized for Apple Silicon + macOS 13+ (Liquid Glass effects in 15/Sequoia). Needs a trial on an older cart Mac.
+- Icon legibility on Intel Macs with Monterey menu bars — the SF Symbol `circle.fill` was sized for Apple Silicon + macOS 13+ (Liquid Glass effects in 15/Sequoia). Needs a trial on an older cart Mac.

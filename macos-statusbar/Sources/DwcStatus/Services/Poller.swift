@@ -6,7 +6,13 @@ import Combine
 /// any polling error. ``Poller`` pushes updates into it on the main actor.
 @MainActor
 final class AppState: ObservableObject {
-    @Published var config:        Config        = .load()
+    @Published var config: Config = .load() {
+        didSet {
+            // Mutating the watch root, dwc binary, or poll intervals must
+            // restart the loops so new values take effect immediately.
+            if oldValue != config { poller?.start() }
+        }
+    }
     @Published var doctorReport:  DoctorReport? = nil
     @Published var watchState:    WatchState?   = nil
     @Published var quarantineCount: Int         = 0
@@ -14,11 +20,17 @@ final class AppState: ObservableObject {
     @Published var lastDoctorAt:  Date?         = nil
     @Published var lastWatchAt:   Date?         = nil
 
+    /// IUO so we can take ``self`` after stored-property init completes;
+    /// assigned exactly once at the bottom of ``init`` and never reset.
+    private var poller: Poller!
+
     init() {
         if config.dwcBinary == nil {
             config.dwcBinary = Config.discoverDwcBinary()
             try? config.save()
         }
+        self.poller = Poller(state: self)
+        self.poller.start()
     }
 
     /// Menu-bar icon state, per plan §3.4.
@@ -75,6 +87,12 @@ final class Poller {
         watchTask?.cancel();  watchTask  = nil
     }
 
+    /// `@MainActor` so the @Published mutations (``state.doctorReport``,
+    /// ``state.lastError``) fire SwiftUI updates on the main thread —
+    /// without this annotation, static methods on a @MainActor class are
+    /// non-isolated, the Combine publisher fires off-main, and the UI
+    /// silently misses the update.
+    @MainActor
     private static func doctorLoop(_ state: AppState) async {
         while !Task.isCancelled {
             let cfg = state.config
@@ -96,6 +114,7 @@ final class Poller {
         }
     }
 
+    @MainActor
     private static func watchLoop(_ state: AppState) async {
         while !Task.isCancelled {
             let cfg = state.config

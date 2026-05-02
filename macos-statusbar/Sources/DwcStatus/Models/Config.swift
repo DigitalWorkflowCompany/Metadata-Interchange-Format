@@ -47,19 +47,36 @@ struct Config: Codable, Equatable {
 }
 
 extension Config {
-    /// Best-effort discovery of the ``dwc`` CLI on PATH. Returns ``nil``
-    /// if the binary can't be located — the UI surfaces that as the
-    /// grey icon state per plan §3.4.
+    /// Best-effort discovery of the ``dwc`` CLI. GUI apps inherit a
+    /// stripped-down PATH (``/usr/bin:/bin:/usr/sbin:/sbin``), so a
+    /// plain ``which dwc`` rarely succeeds — enumerate the locations
+    /// ``pip``/``pipx``/Homebrew/MacPorts/python.org actually install
+    /// to. Returns ``nil`` if every candidate misses; the UI surfaces
+    /// that as the grey icon state and the user can override via the
+    /// menu's "Choose dwc binary…" picker.
     static func discoverDwcBinary() -> String? {
-        let candidates = [
-            "/opt/homebrew/bin/dwc",      // Apple Silicon Homebrew
-            "/usr/local/bin/dwc",         // Intel Homebrew / stock
-            "/opt/local/bin/dwc",         // MacPorts
+        let home = NSHomeDirectory()
+        var candidates = [
+            "/opt/homebrew/bin/dwc",         // Apple Silicon Homebrew
+            "/usr/local/bin/dwc",            // Intel Homebrew / stock
+            "/opt/local/bin/dwc",            // MacPorts
+            "\(home)/.local/bin/dwc",        // pipx, pip --user
         ]
+        // python.org installer drops binaries under
+        // /Library/Frameworks/Python.framework/Versions/<v>/bin — enumerate
+        // every installed Python so we hit whatever 3.x the user has.
+        let pyVersionsRoot = "/Library/Frameworks/Python.framework/Versions"
+        if let versions = try? FileManager.default
+                                     .contentsOfDirectory(atPath: pyVersionsRoot) {
+            for v in versions where v != "Current" {
+                candidates.append("\(pyVersionsRoot)/\(v)/bin/dwc")
+            }
+        }
         for path in candidates where FileManager.default.isExecutableFile(atPath: path) {
             return path
         }
-        // Fall through to PATH lookup via /usr/bin/env
+        // Last-ditch: PATH lookup via /usr/bin/env. Usually fails from a
+        // GUI app context but harmless to try.
         let task = Process()
         task.launchPath = "/usr/bin/env"
         task.arguments  = ["which", "dwc"]

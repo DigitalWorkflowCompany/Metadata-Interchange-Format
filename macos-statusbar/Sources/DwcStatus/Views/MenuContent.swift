@@ -102,6 +102,7 @@ struct MenuContent: View {
                 Text("dwc CLI not found on PATH")
                     .foregroundColor(.red)
             }
+            Button("Choose dwc binary…") { chooseDwcBinary() }
             if let err = state.lastError {
                 Text(err).foregroundColor(.red)
             }
@@ -146,6 +147,22 @@ struct MenuContent: View {
         panel.title                    = "Choose the DWC watch folder"
         if panel.runModal() == .OK, let url = panel.url {
             state.config.watchRoot = url.path
+            try? state.config.save()
+        }
+    }
+
+    private func chooseDwcBinary() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories     = false
+        panel.canChooseFiles           = true
+        panel.allowsMultipleSelection  = false
+        panel.title                    = "Locate the dwc CLI binary"
+        panel.message                  = "Pick the dwc executable — usually under /opt/homebrew/bin, /usr/local/bin, or a Python framework's bin/."
+        panel.showsHiddenFiles         = true
+        panel.treatsFilePackagesAsDirectories = true
+        if panel.runModal() == .OK, let url = panel.url,
+           FileManager.default.isExecutableFile(atPath: url.path) {
+            state.config.dwcBinary = url.path
             try? state.config.save()
         }
     }
