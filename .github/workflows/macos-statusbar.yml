@@ -9,10 +9,6 @@ on:
   push:
     branches: [main]
     tags:     ['v*-mac']
-    paths:
-      - 'macos-statusbar/**'
-      - 'tools/macos-statusbar/**'
-      - '.github/workflows/macos-statusbar.yml'
   pull_request:
     paths:
       - 'macos-statusbar/**'
@@ -106,9 +102,9 @@ jobs:
         if: steps.creds.outputs.ready == 'true'
         working-directory: macos-statusbar
         env:
-          APPLE_ID:    ${{ secrets.NOTARIZE_APPLE_ID }}
-          TEAM_ID:     ${{ secrets.NOTARIZE_TEAM_ID }}
-          APP_PASSWORD:${{ secrets.NOTARIZE_APP_PASSWORD }}
+          APPLE_ID: ${{ secrets.NOTARIZE_APPLE_ID }}
+          TEAM_ID: ${{ secrets.NOTARIZE_TEAM_ID }}
+          APP_PASSWORD: ${{ secrets.NOTARIZE_APP_PASSWORD }}
         run: |
           APP=build/DwcStatus.app
           ZIP=build/DwcStatus.zip
