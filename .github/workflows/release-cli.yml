@@ -1,0 +1,58 @@
+name: release-cli
+
+# Build sdist + wheel for the dwc-sidecar Python package and attach
+# them to the GitHub release. Triggered on tags matching `vX.Y.Z`
+# (without the `-mac` suffix used by macos-statusbar.yml). The
+# Homebrew tap-bump workflow listens to the resulting release.
+#
+# Plan §6 (Track B).
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'      # vX.Y.Z — CLI release
+      - 'v[0-9]+.[0-9]+.[0-9]+rc[0-9]+'  # release candidates
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write    # for softprops/action-gh-release
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install build tooling
+        run: python -m pip install --upgrade build
+
+      - name: Build sdist + wheel
+        run: python -m build
+
+      - name: Verify artifact filenames match expected pattern
+        run: |
+          set -euo pipefail
+          # Expect dwc_sidecar-X.Y.Z.tar.gz and a matching wheel.
+          ls dist/dwc_sidecar-*.tar.gz
+          ls dist/dwc_sidecar-*-py3-none-any.whl
+
+      - name: Run release-artifacts smoke test
+        run: |
+          python -m pip install pytest
+          python -m pytest tests/test_release_artifacts.py -v
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dwc-sidecar-dist
+          path: dist/
+          retention-days: 30
+
+      - name: Attach to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/dwc_sidecar-*.tar.gz
+            dist/dwc_sidecar-*.whl

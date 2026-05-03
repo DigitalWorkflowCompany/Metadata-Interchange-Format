@@ -44,8 +44,8 @@ Silverstack ≤ 9.1**. See §1.1b for the revised design.
 
 ### Post-real-app-validation findings (2026-04-26)
 
-The §7.1 dry-runs uncovered five vendor-side facts that the original plan
-got wrong in either direction. All affect §7.1's ALE exit criterion; the
+The §8.1 dry-runs uncovered five vendor-side facts that the original plan
+got wrong in either direction. All affect §8.1's ALE exit criterion; the
 scripting-track exit criteria for Silverstack and Resolve were met as
 written.
 
@@ -56,13 +56,13 @@ written.
    documented `:getPath()` method (not the assumed `:path()`), and explicit
    workflow-attachment via the Register-in-Library activity. All recorded in
    `src/dwc_sidecar/integrations/silverstack/README.md` and in commit
-   `ca50e93`. Silverstack §7.1 closed end-to-end.
+   `ca50e93`. Silverstack §8.1 closed end-to-end.
 2. **Resolve 20.3.2 + 21 API parity** (favourable). The `MediaPoolItem` /
    `MediaPool` / `ProjectManager` surface this integration uses is
    byte-identical between the Resolve 20 and 21 vendor READMEs (only Fairlight
    additions differ). Validating against Resolve 20 covers 21 — the original
-   §7.1 ask for two trial runs on two machines is redundant. Recorded in
-   commit `b33382d`. Resolve §7.1 closed end-to-end.
+   §8.1 ask for two trial runs on two machines is redundant. Recorded in
+   commit `b33382d`. Resolve §8.1 closed end-to-end.
 3. **YoYotta ALE-import column allowlist.** YoYotta consumes ALE imports
    only against a fixed allowlist of recognised column names (Production,
    Vendor, Season, Episode, ShootDay, ShootDate, TransferDate, Batch, Scene,
@@ -72,9 +72,9 @@ written.
    pending response. See `docs/integration/yoyotta-vendor-request.md`.
 4. **ShotPut Pro has no ALE-import surface.** ShotPut Pro is a producer-side
    offload tool with no metadata-import feature category — manuals confirm,
-   2025 demo confirms. The §7.1 criterion as written is impossible by product
+   2025 demo confirms. The §8.1 criterion as written is impossible by product
    design (not a vendor allowlist or configuration issue). Track **descoped**
-   per §7.1's own escape hatch; the ShotPut Pro integration is reframed as a
+   per §8.1's own escape hatch; the ShotPut Pro integration is reframed as a
    producer-side workflow neighbor in `docs/integration/shotput.md`. A future
    ShotPut Pro release that adds ALE import would bring this back into scope
    but does not block the phase.
@@ -84,7 +84,7 @@ written.
    Avid case-normalises column names (`DWC_Signed` → `Dwc_signed`); the
    14-char-truncation folklore is **not** a hard rule in 2024 — `Dwc_lastverified`
    (16 chars) and `Dwc_sidecarpath` (15 chars) come through in full. Resolves
-   §8 open question #1. Documented in `docs/integration/avid.md`. Avid §7.1
+   §9 open question #1. Documented in `docs/integration/avid.md`. Avid §8.1
    track **closed**.
 
 Two follow-ups carried out of the dry-run sprint, both **resolved 2026-04-26**:
@@ -101,7 +101,7 @@ Two follow-ups carried out of the dry-run sprint, both **resolved 2026-04-26**:
   `src/dwc_sidecar/ale_emitter.py` module docstring and
   `docs/integration/avid.md`.
 
-Net effect on §7.1: ALE-track exit criterion **met** against Avid (the
+Net effect on §8.1: ALE-track exit criterion **met** against Avid (the
 canonical ALE consumer), with optional vendor-side display in YoYotta if
 Martin's allowlist change ships. ShotPut Pro is documented and descoped.
 
@@ -118,7 +118,7 @@ product-critique discussion of 2026-04-22.
   5. `dwc init` — one-command onboarding
 
 Each item is independently shippable. Ship order is 5 → 2 → 1 → 3 → 4
-(highest adoption-leverage-per-effort first; see §7).
+(highest adoption-leverage-per-effort first; see §8).
 
 *Revised per sequencing review: the `validate_as_json()` refactor (§4.5)
 is extracted as the first commit of the phase — a half-day internal change
@@ -261,7 +261,7 @@ in §1.4; the emitters differ only in transport.
 - **No ingest hook** — Resolve has no `onStampVideo` equivalent; user
   invokes the script manually after importing clips, or a post-dailies
   pipeline invokes it headless.
-- **Field-name convention** — open question, see §8.
+- **Field-name convention** — open question, see §9.
 
 #### What item 1 does and doesn't produce
 
@@ -290,7 +290,7 @@ Silverstack 8 in post gets both surfaces.
 - `dwc watch --emit-ale` flag (default: on)
 - `docs/integration/yoyotta.md`, `docs/integration/shotput.md` — per-app
   setup (1 page each); shipped as part of v0.3.0, not before real-app
-  validation passes (§7.1)
+  validation passes (§8.1)
 - `docs/integration/ale-spike-results.md` — spike outcome
 - `tests/test_ale_emitter.py`
 - A sample `dwc-columns.ale` committed alongside the stub data
@@ -497,7 +497,7 @@ and script-based tools.*
 
 For Silverstack specifically, note that Silverstack 8+ remembers imported
 custom columns across project sessions, so the ALE import is a one-time
-action per project. UNVERIFIED: confirm during real-app testing (§7.1).
+action per project. UNVERIFIED: confirm during real-app testing (§8.1).
 
 ### 1.8 watch-state `emitted` field — moved into item 1
 
@@ -548,7 +548,7 @@ instances produce a file that is readable by both old and new consumers.
   the sidecar is the source of truth. Documented above and in §1.7.
 - **Unicode beyond Latin-1 Extended.** The round-trip test covers `Café`.
   Whether Silverstack/YoYotta parse multi-byte characters correctly in ALE
-  is UNVERIFIED; confirm during real-app testing (§7.1 exit criteria). Flag
+  is UNVERIFIED; confirm during real-app testing (§8.1 exit criteria). Flag
   in integration docs.
 - **Silverstack 9.2.0 adoption lag** *(post-planning finding 2026-04-23)*.
   The Lua API is eight days old at time of writing. Most production DITs
@@ -592,7 +592,7 @@ instances produce a file that is readable by both old and new consumers.
 
 **Item 1 total: 4.5 engineer-days** (was 2).
 
-Phase 02 total revised to ~15.5 engineer-days (was 13.5). See §7.
+Phase 02 total revised to ~15.5 engineer-days (was 13.5). See §8.
 
 ---
 
@@ -1341,7 +1341,272 @@ Handling:
 
 ---
 
-## 6. Cross-cutting work
+## 6. DWC Status onboarding nudge + CLI Homebrew formula
+
+### 6.1 Problem
+
+`dwc init` (§5) collapsed producer-side setup into one command, but two
+onboarding gaps remain:
+
+1. **Discovery on the consumer side.** A user who installs DWC Status
+   from the .dmg has no signal that they need to run `dwc init` (or even
+   that a CLI exists). The current first-launch flow only asks for a
+   watch root (`macos-statusbar/README.md` "First launch"). If the CLI
+   is missing or no `signers.json` exists, the icon stays grey and the
+   panel has nothing to say about it.
+2. **CLI install friction.** `docs/quickstart.md` instructs `pipx
+   install dwc-sidecar`. pipx works but is one more concept; many
+   macOS users already have Homebrew. The DWC Status app's cask is at
+   `dwc-sidecar-status`, but the CLI itself has no Homebrew formula.
+
+A fresh-Mac user who downloads the .dmg therefore sees a grey icon,
+gets no actionable next step, and has to find their way back to the
+README. The user-facing fix is two-track: (a) make CLI install a
+single-line `brew install dwc-sidecar`, and (b) have DWC Status detect
+the missing pieces and surface copy-pasteable commands.
+
+DWC Status remains read-only throughout: it never invokes `dwc init`,
+never writes signer config, never generates keys. It detects state and
+points the user at the right command. The design constraint from
+`macos-statusbar/README.md` ("the app can't be a vector for silent
+misconfiguration if it can't configure anything") is preserved.
+
+### 6.2 Deliverables
+
+**Track A — DWC Status onboarding panel:**
+- `OnboardingState` enum + `Services/OnboardingDetector.swift` in
+  `macos-statusbar/Sources/DwcStatus/`
+- Three-state panel UI in `MenuContent.swift` with copy-to-clipboard
+  and "Open Terminal" actions
+- "Recheck" button that re-runs detection without app restart
+- `macos-statusbar/Tests/DwcStatusTests/OnboardingTests.swift` covering
+  each state transition with mock filesystem + environment probes
+- Updated "First launch" section in `macos-statusbar/README.md`
+
+**Track B — CLI Homebrew formula:**
+- New repo `DigitalWorkflowCompany/homebrew-tap` with
+  `Formula/dwc-sidecar.rb`
+- Formula installs `dwc-sidecar` via Homebrew's
+  `Language::Python::Virtualenv` helper (matching pipx's isolation
+  model); wires `dwc` onto PATH at `/opt/homebrew/bin/dwc`
+- `.github/workflows/release.yml` addition: build sdist + wheel and
+  attach to the GitHub release alongside the existing macOS DMG
+- `.github/workflows/homebrew-tap-bump.yml`: on `release: published`,
+  runs `brew bump-formula-pr` against the tap repo with the new URL
+  and sha256
+- `docs/quickstart.md` lead changed to `brew install
+  digitalworkflowcompany/tap/dwc-sidecar`; pipx kept as a documented
+  fallback for non-mac / non-brew users
+
+### 6.3 Onboarding state machine (Track A)
+
+DWC Status detects three states:
+
+| State                  | When DWC Status enters it                                                                                  |
+|------------------------|------------------------------------------------------------------------------------------------------------|
+| `cliMissing`           | `which dwc` returns nothing AND none of the discovered paths in `macos-statusbar/README.md:33` exist        |
+| `signersUnconfigured`  | CLI present, but no `signers.json` discoverable AND no `DWC_SIGNERS` env var                                |
+| `ready`                | CLI present AND a `signers.json` discoverable                                                              |
+
+Panel UI per state:
+
+- **`cliMissing`** — "Install the DWC CLI" header. Copy-button-prefilled
+  command: `brew install digitalworkflowcompany/tap/dwc-sidecar`. Pipx
+  fallback in an expandable section.
+- **`signersUnconfigured`** — "Configure signing" header. "Open Terminal
+  at `dwc init`" button. Explanatory line: "DWC Status doesn't perform
+  setup itself — `dwc init` walks you through it (§5)."
+- **`ready`** — current panel content (recent signatures, quarantined
+  clips, doctor findings).
+
+Both onboarding states show a "I've finished setup, recheck" button
+that re-runs detection. Detection also runs on each `MenuBarExtra`
+open (no 60s timer racing with mid-setup state).
+
+### 6.4 Detection seam
+
+Detection lives in a single Swift function with injectable probes:
+
+```swift
+enum OnboardingState { case cliMissing, signersUnconfigured, ready }
+
+protocol FileSystemProbing {
+    func exists(_ path: String) -> Bool
+}
+protocol EnvironmentProbing {
+    func value(forName: String) -> String?
+}
+
+func detectOnboardingState(
+    fs: FileSystemProbing = RealFileSystem(),
+    env: EnvironmentProbing = RealEnvironment(),
+    config: AppConfig
+) -> OnboardingState
+```
+
+Tests pass synthetic `FileSystemProbing` and `EnvironmentProbing` mocks
+to exercise all three branches without touching the real filesystem.
+This mirrors the `_detect_platform()` injection seam used in `init.py`
+(§5.4).
+
+### 6.5 What DWC Status onboarding never does
+
+- Never runs `dwc init` directly. It only opens Terminal at the command
+  or copies the command to the clipboard.
+- Never writes `signers.json` or `keyring.json`. Those remain CLI-only
+  outputs.
+- Never offers to install Homebrew itself. If `brew` is missing, the
+  pipx fallback row covers that case.
+- Never silently re-runs detection on a timer. Recheck is the only
+  refresh path, so a misconfigured setup is visible and not papered
+  over.
+
+### 6.6 Homebrew formula details (Track B)
+
+Formula source (`Formula/dwc-sidecar.rb` in the tap repo):
+
+```ruby
+class DwcSidecar < Formula
+  include Language::Python::Virtualenv
+
+  desc "Per-clip film-industry metadata sidecar — CLI"
+  homepage "https://ns.the-dwc.com/sidecar/"
+  url "https://github.com/DigitalWorkflowCompany/Metadata-Interchange-Format/releases/download/vX.Y.Z/dwc_sidecar-X.Y.Z.tar.gz"
+  sha256 "..."
+  license "MIT"
+
+  depends_on "python@3.12"
+
+  resource "rfc8785" do
+    url "https://files.pythonhosted.org/packages/.../rfc8785-X.tar.gz"
+    sha256 "..."
+  end
+  # ... cryptography, jsonschema, xxhash, blake3, pyyaml resources
+
+  def install
+    virtualenv_install_with_resources
+  end
+
+  test do
+    system bin/"dwc", "--version"
+  end
+end
+```
+
+**Sdist source.** The formula consumes the sdist published to GitHub
+Releases. The release workflow currently produces a macOS DMG; one
+small addition (`python -m build` step) produces the sdist + universal
+wheel and attaches them to the same release.
+
+**Tap-bump automation.** The `homebrew-tap-bump.yml` workflow triggers
+on `release: published`. It runs `brew bump-formula-pr` (Homebrew's
+official command for this) against the tap repo with the new URL and
+sha256. Failures surface in the same workflow-run notifications as
+DMG-build failures; they don't block the release itself.
+
+### 6.7 Why a tap and not homebrew-core
+
+Homebrew core requires 50+ stargazers, "notability", and a stable
+release history. We're below that threshold. The tap path is faster,
+fully under our control, and visually equivalent for users
+(`brew install digitalworkflowcompany/tap/dwc-sidecar` is one command).
+Migration to homebrew-core is a Phase 03+ candidate if/when adoption
+justifies it.
+
+### 6.8 Tests
+
+**Track A (Swift):**
+- `OnboardingTests.swift`: three state transitions tested with mocked
+  `FileSystemProbing` and `EnvironmentProbing`
+- "Open Terminal" action invokes the right `osascript` snippet
+  (assertion against the recorded command, not the real `Process` run)
+- "Copy to clipboard" places the expected install command on
+  `NSPasteboard.general` (assertion against pasteboard contents)
+- Recheck triggers re-detection and updates the panel state
+- Detection on `MenuBarExtra` open is idempotent (no side effects from
+  repeated calls)
+
+**Track B (Python + CI):**
+- `tests/test_release_artifacts.py` asserts the release workflow
+  produces both an sdist and a wheel matching
+  `dwc_sidecar-X.Y.Z.{tar.gz,whl}` (smoke-tests the path the formula
+  depends on)
+- Tap repo carries its own CI: `brew test-bot --only-formulae` runs on
+  every formula bump PR; a failed install or `brew test` fails the PR
+  check before merge
+
+### 6.9 Risks
+
+- **Formula sdist sha256 drift.** Each release produces a new sha256;
+  if the bump workflow fails silently, the formula points at a missing
+  or mismatched tarball. Mitigation: `homebrew-tap-bump.yml` exits
+  nonzero on any step failure, and notifications surface alongside
+  DMG-build failures (existing operator habit).
+- **Mid-setup state race.** If a user is mid-`dwc init` when DWC Status
+  re-opens, detection might briefly see `signersUnconfigured` then
+  `ready`. Acceptable: recheck is explicit, not on a timer; worst case
+  is one extra click.
+- **AppleScript permission prompt.** Recent macOS versions prompt for
+  permission the first time DWC Status invokes `osascript`. Documented
+  in the post-onboarding panel ("If macOS asks DWC Status to control
+  Terminal, allow it — one-time").
+- **Tap repo sprawl.** A separate `homebrew-tap` repo means one more
+  thing to keep in sync. Mitigation: the tap repo contains nothing but
+  `Formula/`; all source-of-truth lives in this repo and the bump is
+  fully automated.
+
+### 6.10 Estimate
+
+- Track A (DWC Status onboarding panel): 1.5 engineer-days
+- Track B (Homebrew tap + bump workflow): 1 engineer-day
+
+Total: 2.5 engineer-days. Tracks are independent and parallelizable.
+
+### 6.11 Sequencing within the phase
+
+Track A grows the existing menu-bar app (§3), so it lands after §3
+ships. Track B is independent of §3 and can land any time after §5
+(`dwc init`) ships, since the formula installs the binary that hosts
+§5.
+
+Updated ship order, extending the §8 sequencing diagram:
+
+```
+[phase-opening] validate_as_json() refactor
+
+5. dwc init
+        |
+        v
+2. dwc doctor
+        |
+        v
+1. ALE emitter
+        |
+        v
+3. Menu-bar app
+        |
+        v
+6. Onboarding nudge + brew formula  --- both tracks parallelizable
+        |
+        v
+4. Web validator
+```
+
+### 6.12 What this section deliberately does not include
+
+- Linux/Windows equivalent of Track A. Phase 03 candidate, alongside
+  the Linux/Windows menu-bar app deferred in §9.5.
+- A `brew uninstall` cleanup script for `~/Library/Application
+  Support/DwcStatus`. State cleanup is a Homebrew cask convention;
+  this is a formula, not a cask. macOS users with state to clean
+  already know `defaults` / `rm`.
+- Auto-installing Homebrew when missing. Users who want Homebrew
+  install it themselves; users who don't have it use the pipx
+  fallback.
+
+---
+
+## 7. Cross-cutting work
 
 ### 6.1 Packaging
 
@@ -1423,7 +1688,7 @@ and subsequent phases should pivot to Resolve / MAM consumer integration.
 
 ---
 
-## 7. Sequencing
+## 8. Sequencing
 
 ```
 [phase-opening] validate_as_json() refactor  <- half-day, stabilises validate.py
@@ -1488,7 +1753,7 @@ field set defined in §1.4. The `validate_as_json()` refactor (phase-opening
 
 ---
 
-## 8. Open questions
+## 9. Open questions
 
 1. **ALE column naming** *(resolved 2026-04-26)*. Underscore throughout
    (`DWC_Signed`) is the right call. Verified against Avid Media Composer
@@ -1542,7 +1807,7 @@ field set defined in §1.4. The `validate_as_json()` refactor (phase-opening
 
 ---
 
-## 9. What this plan deliberately does not include
+## 10. What this plan deliberately does not include
 
 - No new signer backends (AWS KMS still won't support Ed25519; skipping).
 - No schema changes. If the ALE column set grows beyond eight, that's
@@ -1558,7 +1823,7 @@ field set defined in §1.4. The `validate_as_json()` refactor (phase-opening
 
 ---
 
-## 10. Low-severity items — consider during implementation
+## 11. Low-severity items — consider during implementation
 
 The following low-severity findings from reviewers require no plan change
 but should be kept in mind during implementation:

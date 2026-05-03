@@ -19,6 +19,7 @@ final class AppState: ObservableObject {
     @Published var lastError:     String?       = nil
     @Published var lastDoctorAt:  Date?         = nil
     @Published var lastWatchAt:   Date?         = nil
+    @Published var onboardingState: OnboardingState = .ready
 
     /// IUO so we can take ``self`` after stored-property init completes;
     /// assigned exactly once at the bottom of ``init`` and never reset.
@@ -29,8 +30,21 @@ final class AppState: ObservableObject {
             config.dwcBinary = Config.discoverDwcBinary()
             try? config.save()
         }
+        self.onboardingState = detectOnboardingState(config: config)
         self.poller = Poller(state: self)
         self.poller.start()
+    }
+
+    /// Re-classify the host onboarding state. Bound to the "I've finished
+    /// setup, recheck" button in ``MenuContent`` and called when the
+    /// ``MenuBarExtra`` opens (plan §6.3 — recheck is the only refresh
+    /// path for onboarding state, no timer).
+    func recheckOnboarding() {
+        if config.dwcBinary == nil {
+            config.dwcBinary = Config.discoverDwcBinary()
+            try? config.save()
+        }
+        onboardingState = detectOnboardingState(config: config)
     }
 
     /// Menu-bar icon state, per plan §3.4.

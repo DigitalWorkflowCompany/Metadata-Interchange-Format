@@ -34,7 +34,19 @@ Xcode sees the SwiftPM package as an editable project — useful for the SwiftUI
 
 ## First launch
 
-The app writes `~/Library/Application Support/DwcStatus/config.json` on first run. Click the icon → "Choose watch folder…" to point it at the production root `dwc watch` is monitoring. Config keys:
+The app writes `~/Library/Application Support/DwcStatus/config.json` on first run and detects which onboarding state your host is in (plan §6.3). One of three panels shows, never an empty grey icon with no explanation:
+
+| State | What the panel shows | What you do |
+|---|---|---|
+| **CLI missing** | "Install the DWC CLI" with `brew install digitalworkflowcompany/tap/dwc-sidecar` (copy button). Pipx fallback for non-Homebrew users. | Run the install command in Terminal. Click "Recheck". |
+| **Signers unconfigured** | "Configure signing" with a button that opens Terminal at `dwc init`. | Walk through `dwc init`'s prompts. Click "Recheck". |
+| **Ready** | Recent signatures, quarantine count, doctor health. | Pick the watch folder via "Choose watch folder…" if you haven't yet. |
+
+DWC Status itself never invokes `dwc init`, generates keys, or writes signer config — those operations live in the CLI by design. The onboarding panel only points you at the right command.
+
+If macOS asks "DWC Status wants to control Terminal" the first time you click the Open-Terminal button, allow it — that's the standard one-time AppleScript permission prompt for a sandboxed-ish menu-bar app.
+
+Config keys (written to `config.json`):
 
 | Key | Purpose |
 |---|---|

@@ -6,17 +6,26 @@ Get from a fresh Mac to a green `dwc doctor` in under three minutes.
 
 - macOS 13+ or Linux (Ubuntu 22.04+ tested). Windows is not yet supported.
 - Python 3.11+. Check with `python3 --version`.
-- `pipx`. If missing: `brew install pipx && pipx ensurepath`.
-
-Please also confirm that Xcode Command Line Tools are installed (`xcode-select --install`) — `pipx` as the underlying Python wheels need them.
+- Xcode Command Line Tools (`xcode-select --install`) — required for the underlying Python wheels on macOS.
 
 ## Install
 
+The fastest path on macOS is Homebrew (plan §6):
+
 ```bash
+brew install digitalworkflowcompany/tap/dwc-sidecar
+```
+
+That gives you the `dwc` CLI on `PATH` with no Python toolchain in your way.
+
+If you don't have Homebrew, or you're on Linux, install via pipx instead:
+
+```bash
+brew install pipx && pipx ensurepath    # macOS without Homebrew? skip this line
 pipx install dwc-sidecar
 ```
 
-This installs a single `dwc` CLI with subcommands. `dwc --help` lists them all.
+Either path installs the same `dwc` CLI. `dwc --help` lists every subcommand.
 
 ## First-time setup — `dwc init`
 

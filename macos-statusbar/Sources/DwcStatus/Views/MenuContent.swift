@@ -16,11 +16,30 @@ import AppKit
 struct MenuContent: View {
     @ObservedObject var state: AppState
 
+    /// Side-effect adapters — protocols so tests can inject mocks.
+    /// Defaults talk to the real system pasteboard and AppleScript engine.
+    var pasteboard: PasteboardWriting   = SystemPasteboard()
+    var scriptRunner: AppleScriptRunning = SystemAppleScriptRunner()
+
     private static let panelWidth: CGFloat = 280
     private static let hPadding:   CGFloat = 14
     private static let vPadding:   CGFloat = 10
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            switch state.onboardingState {
+            case .cliMissing:          cliMissingPanel
+            case .signersUnconfigured: signersUnconfiguredPanel
+            case .ready:               readyPanel
+            }
+        }
+        .frame(width: Self.panelWidth, alignment: .leading)
+        .onAppear { state.recheckOnboarding() }
+    }
+
+    // MARK: - Ready (full panel)
+
+    private var readyPanel: some View {
         VStack(alignment: .leading, spacing: 0) {
             headerSection
                 .padding(.horizontal, Self.hPadding)
@@ -66,7 +85,142 @@ struct MenuContent: View {
                 .padding(.top, 8)
                 .padding(.bottom, 10)
         }
-        .frame(width: Self.panelWidth, alignment: .leading)
+    }
+
+    // MARK: - Onboarding panels (plan §6.3)
+
+    private var cliMissingPanel: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            onboardingHeader(
+                title: "Install the DWC CLI",
+                subtitle: "DWC Status needs the dwc command-line tool",
+                symbol: "shippingbox",
+                tint: .accentColor
+            )
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Recommended (Homebrew):")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                commandRow(OnboardingActions.brewInstallCommand)
+
+                Text("Without Homebrew (pipx):")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 4)
+                commandRow(OnboardingActions.pipxFallbackCommand)
+            }
+            .padding(.horizontal, Self.hPadding)
+            .padding(.vertical, Self.vPadding)
+
+            Divider()
+
+            recheckAndQuitSection
+        }
+    }
+
+    private var signersUnconfiguredPanel: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            onboardingHeader(
+                title: "Configure signing",
+                subtitle: "Run dwc init to generate a signing key",
+                symbol: "key",
+                tint: .accentColor
+            )
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("DWC Status doesn't perform setup itself — `dwc init` walks you through it (plan §5).")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                menuRow(icon: "terminal", label: "Open Terminal at dwc init") {
+                    runDwcInitInTerminal()
+                }
+            }
+            .padding(.horizontal, Self.hPadding)
+            .padding(.vertical, Self.vPadding)
+
+            Divider()
+
+            recheckAndQuitSection
+        }
+    }
+
+    private func onboardingHeader(
+        title: String, subtitle: String, symbol: String, tint: Color
+    ) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: symbol)
+                .symbolRenderingMode(.palette)
+                .foregroundStyle(tint)
+                .font(.system(size: 22, weight: .regular))
+                .frame(width: 26, height: 26)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.headline)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, Self.hPadding)
+        .padding(.top, 14)
+        .padding(.bottom, 12)
+    }
+
+    /// Monospaced command row with a copy-to-clipboard button.
+    private func commandRow(_ command: String) -> some View {
+        HStack(spacing: 8) {
+            Text(command)
+                .font(.system(.caption, design: .monospaced))
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .help(command)
+            Spacer(minLength: 4)
+            Button {
+                pasteboard.setString(command)
+            } label: {
+                Image(systemName: "doc.on.doc")
+                    .font(.caption)
+            }
+            .buttonStyle(.borderless)
+            .help("Copy to clipboard")
+        }
+        .padding(8)
+        .background(Color.secondary.opacity(0.08))
+        .cornerRadius(6)
+    }
+
+    private func runDwcInitInTerminal() {
+        let source = OnboardingActions.dwcInitTerminalScript(
+            watchRoot: state.config.watchRoot
+        )
+        scriptRunner.run(source: source)
+    }
+
+    private var recheckAndQuitSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            menuRow(icon: "arrow.clockwise",
+                    label: "I've finished setup, recheck") {
+                state.recheckOnboarding()
+            }
+            .padding(.horizontal, Self.hPadding)
+            .padding(.vertical, Self.vPadding)
+
+            Divider()
+
+            quitSection
+                .padding(.horizontal, Self.hPadding)
+                .padding(.top, 8)
+                .padding(.bottom, 10)
+        }
     }
 
     // MARK: - Header

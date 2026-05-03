@@ -1,0 +1,98 @@
+name: homebrew-tap-bump
+
+# When release-cli.yml publishes a new GitHub release, open a PR
+# against DigitalWorkflowCompany/homebrew-tap that bumps the
+# dwc-sidecar formula's URL and sha256 to the just-published sdist,
+# and refreshes every Python `resource` block from PyPI.
+#
+# Plan §6 (Track B). Failures here surface as a workflow-run
+# notification but do not block the release itself — the formula can
+# always be bumped manually from a developer machine.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to bump to (e.g. v0.4.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  bump:
+    runs-on: macos-14   # Homebrew runs natively on macOS runners
+    if: ${{ !github.event.release.prerelease }}
+    steps:
+      - name: Resolve release tag
+        id: tag
+        run: |
+          if [ -n "${{ inputs.tag }}" ]; then
+            echo "value=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip non-CLI tags (e.g. v*-mac)
+        run: |
+          tag="${{ steps.tag.outputs.value }}"
+          if [[ "$tag" == *-mac ]]; then
+            echo "::notice::Tag $tag is the macOS app release, not the CLI — skipping CLI formula bump."
+            exit 0
+          fi
+          # CLI tags are vX.Y.Z[rcN]; bail otherwise.
+          if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(rc[0-9]+)?$ ]]; then
+            echo "::warning::Tag $tag does not match the CLI release pattern — skipping."
+            exit 0
+          fi
+
+      - name: Compute sdist URL + sha256
+        id: sdist
+        run: |
+          set -euo pipefail
+          tag="${{ steps.tag.outputs.value }}"
+          version="${tag#v}"
+          url="https://github.com/${{ github.repository }}/releases/download/${tag}/dwc_sidecar-${version}.tar.gz"
+          # Wait up to 60s for the asset to be reachable (race between
+          # release-published webhook and asset upload completing).
+          for i in 1 2 3 4 5 6; do
+            if curl -fsLI "$url" >/dev/null 2>&1; then
+              break
+            fi
+            echo "sdist not yet reachable (attempt $i); sleeping 10s"
+            sleep 10
+          done
+          sha256=$(curl -fsL "$url" | shasum -a 256 | awk '{print $1}')
+          echo "url=$url"       >> "$GITHUB_OUTPUT"
+          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "::notice::sdist $url sha256=$sha256"
+
+      - name: Configure git author for the bump PR
+        run: |
+          git config --global user.name  "dwc-release-bot"
+          git config --global user.email "release-bot@the-dwc.com"
+
+      - name: Tap and bump
+        env:
+          # A fine-grained PAT with `contents: write` on the tap repo,
+          # stored as a repo secret. brew bump-formula-pr opens the PR
+          # under this token's account.
+          HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HOMEBREW_GITHUB_API_TOKEN:-}" ]; then
+            echo "::warning::HOMEBREW_TAP_TOKEN secret missing — cannot open PR. Skipping."
+            exit 0
+          fi
+          brew tap DigitalWorkflowCompany/tap
+          brew bump-formula-pr \
+            --no-browse \
+            --no-fork \
+            --url    "${{ steps.sdist.outputs.url }}" \
+            --sha256 "${{ steps.sdist.outputs.sha256 }}" \
+            --message "Update Python resources for v${{ steps.sdist.outputs.version }}" \
+            digitalworkflowcompany/tap/dwc-sidecar
