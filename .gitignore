@@ -7,6 +7,11 @@ dist/
 .watch-state.json
 quarantine/
 
+# Plain-text Ed25519 private keys for the local signer backend.
+# CLAUDE.md: dev/demo only; never commit. Production hosts should
+# use the file/keychain/pkcs11/cloud backends instead.
+keys.priv.json
+
 # SwiftPM + Xcode build outputs (macos-statusbar/)
 .build/
 macos-statusbar/build/
