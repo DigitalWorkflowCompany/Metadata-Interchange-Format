@@ -1,4 +1,4 @@
-# DwcStatus — macOS menu-bar status app
+# DWC Status — macOS menu-bar status app
 
 Read-only ambient signal for `dwc watch`. A filled circle in the menu bar tinted by overall health; clicking drops a summary of recent signatures, quarantined clips, and `dwc doctor` findings.
 
@@ -9,9 +9,14 @@ Plan §3. No authoring, no key operations, no validation overrides — all inter
 ```bash
 cd macos-statusbar
 swift build -c release
-./Scripts/make_app.sh                       # → build/DwcStatus.app (unsigned)
-open build/DwcStatus.app
+./Scripts/make_app.sh                       # → "build/DWC Status.app" (unsigned)
+open "build/DWC Status.app"
 ```
+
+The bundled app icon (`Resources/AppIcon.icns`) is committed to the repo.
+If the source logo (`resources/logos/DWC_LogoDevice.png`) ever changes,
+regenerate with `./Scripts/make_icon.sh` (requires Python with Pillow,
+plus the macOS-stock `sips` and `iconutil`).
 
 The Swift sources also open cleanly in Xcode:
 
@@ -70,12 +75,12 @@ Then add these GitHub repo secrets:
 | `NOTARIZE_TEAM_ID` | 10-char team ID from the developer portal |
 | `NOTARIZE_APP_PASSWORD` | The app-specific password |
 
-When these are set, `.github/workflows/macos-statusbar.yml` codesigns, notarizes, staples, packages a `DwcStatus.dmg`, and uploads it as a release artifact on tag pushes. Missing secrets mean CI still builds + tests, but stops short of release packaging.
+When these are set, `.github/workflows/macos-statusbar.yml` codesigns, notarizes, staples, packages a `DWC-Status-vX.Y.Z-mac.dmg`, and uploads it as a release artifact on tag pushes. Missing secrets mean CI still builds + tests, but stops short of release packaging.
 
 ## Install for end users
 
-1. Download `DwcStatus.dmg` from the GitHub release.
-2. Drag `DwcStatus.app` into `/Applications`.
+1. Download `DWC-Status-vX.Y.Z-mac.dmg` from the GitHub release.
+2. Drag `DWC Status.app` into `/Applications`.
 3. Launch. Grant Keychain access if prompted (for reading the `keys.priv.json` dev-mode keyring).
 4. Click the circle, pick a watch folder.
 5. Optional: the app offers to install a LaunchAgent at login on first launch — tick to have it start automatically on reboot.

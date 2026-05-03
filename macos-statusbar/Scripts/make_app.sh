@@ -20,9 +20,10 @@ PACKAGE_ROOT="$(cd "$HERE/.." && pwd)"
 cd "$PACKAGE_ROOT"
 
 BUILD_CONFIG="release"
-BUNDLE_NAME="DwcStatus.app"
+BUNDLE_NAME="DWC Status.app"
 BUNDLE_ID="com.the-dwc.sidecar.status"
 VERSION="${APP_VERSION:-0.1.0}"
+ICON_SRC="$PACKAGE_ROOT/Resources/AppIcon.icns"
 
 echo "→ swift build (config=$BUILD_CONFIG)…"
 swift build --configuration "$BUILD_CONFIG"
@@ -40,6 +41,12 @@ mkdir -p "$APP_OUT/Contents/MacOS" "$APP_OUT/Contents/Resources"
 cp "$BIN_PATH" "$APP_OUT/Contents/MacOS/DwcStatus"
 chmod +x      "$APP_OUT/Contents/MacOS/DwcStatus"
 
+if [[ -f "$ICON_SRC" ]]; then
+    cp "$ICON_SRC" "$APP_OUT/Contents/Resources/AppIcon.icns"
+else
+    echo "WARNING: $ICON_SRC missing — bundle will ship without an app icon" >&2
+fi
+
 cat > "$APP_OUT/Contents/Info.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -47,8 +54,10 @@ cat > "$APP_OUT/Contents/Info.plist" <<EOF
 <dict>
     <key>CFBundleExecutable</key>        <string>DwcStatus</string>
     <key>CFBundleIdentifier</key>        <string>$BUNDLE_ID</string>
-    <key>CFBundleName</key>              <string>DwcStatus</string>
-    <key>CFBundleDisplayName</key>       <string>DWC Sidecar Status</string>
+    <key>CFBundleName</key>              <string>DWC Status</string>
+    <key>CFBundleDisplayName</key>       <string>DWC Status</string>
+    <key>CFBundleIconFile</key>          <string>AppIcon</string>
+    <key>CFBundleIconName</key>          <string>AppIcon</string>
     <key>CFBundlePackageType</key>       <string>APPL</string>
     <key>CFBundleShortVersionString</key><string>$VERSION</string>
     <key>CFBundleVersion</key>           <string>$VERSION</string>

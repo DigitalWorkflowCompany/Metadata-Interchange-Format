@@ -1,4 +1,4 @@
-# Cutting a `DwcStatus` release
+# Cutting a `DWC Status` release
 
 Step-by-step runbook for the day you tag a `vX.Y.Z-mac` release. Reference material on what each piece does lives in [`README.md`](README.md); this file is just the procedure.
 
@@ -60,12 +60,12 @@ When you're ready:
 
 5. **Spot-check the staple** locally:
    ```bash
-   xcrun stapler validate /Applications/DwcStatus.app
+   xcrun stapler validate "/Applications/DWC Status.app"
    # → "The validate action worked!"
    ```
    And, on an offline Mac (cuts off Apple's online check):
    ```bash
-   spctl --assess -vv /Applications/DwcStatus.app
+   spctl --assess -vv "/Applications/DWC Status.app"
    # → "accepted" + "Notarized Developer ID"
    ```
 

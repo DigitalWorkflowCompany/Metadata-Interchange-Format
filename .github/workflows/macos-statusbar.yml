@@ -45,8 +45,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: DwcStatus-unsigned
-          path: macos-statusbar/build/DwcStatus.app
+          name: DWC-Status-unsigned
+          path: macos-statusbar/build/DWC Status.app
           retention-days: 30
 
   sign-and-release:
@@ -108,8 +108,8 @@ jobs:
           TEAM_ID: ${{ secrets.NOTARIZE_TEAM_ID }}
           APP_PASSWORD: ${{ secrets.NOTARIZE_APP_PASSWORD }}
         run: |
-          APP=build/DwcStatus.app
-          ZIP=build/DwcStatus.zip
+          APP="build/DWC Status.app"
+          ZIP="build/DWC Status.zip"
           ditto -c -k --keepParent "$APP" "$ZIP"
           xcrun notarytool submit "$ZIP" \
               --apple-id  "$APPLE_ID" \
@@ -124,24 +124,24 @@ jobs:
         run: |
           brew install create-dmg
           create-dmg \
-              --volname "DWC Sidecar Status" \
+              --volname "DWC Status" \
               --window-size 540 340 \
               --icon-size 96 \
-              --icon "DwcStatus.app" 140 170 \
+              --icon "DWC Status.app" 140 170 \
               --app-drop-link 400 170 \
-              "build/DwcStatus-${{ github.ref_name }}.dmg" \
-              "build/DwcStatus.app"
+              "build/DWC-Status-${{ github.ref_name }}.dmg" \
+              "build/DWC Status.app"
 
       - name: Upload DMG as workflow artifact
         if: steps.creds.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: DwcStatus-signed-dmg
-          path: macos-statusbar/build/DwcStatus-*.dmg
+          name: DWC-Status-signed-dmg
+          path: macos-statusbar/build/DWC-Status-*.dmg
           retention-days: 30
 
       - name: Upload DMG to release
         if: steps.creds.outputs.ready == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          files: macos-statusbar/build/DwcStatus-*.dmg
+          files: macos-statusbar/build/DWC-Status-*.dmg
