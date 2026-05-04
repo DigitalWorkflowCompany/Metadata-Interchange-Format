@@ -196,7 +196,7 @@
                       "sig": {
                         "alg": "ed25519",
                         "kid": "dwc-dit-01",
-                        "value": "HgkHLKcrh/hihMRhKgo5yFa/SSO11tPUjX0/WEq6w0jtDRBksjDS+zUNOgDyS9/mz95ZoVutKhvuD189kO+CAw=="
+                        "value": "VUILEZOBEPzI233UdDBMviULpxWiLHsq6udYHLgsT88GVvVIda8JU5n282g3d3/YoqqNoyPFG/EPF3pquseUBg=="
                       }
                     },
                     {
@@ -217,7 +217,7 @@
                       "sig": {
                         "alg": "ed25519",
                         "kid": "dwc-color-01",
-                        "value": "/y7C9xNqwzFDesGZZZFeJV4hA6/Ftw22qTBphzsex8xe/fUD/q9+jZfR4w3CvkQHtzauAbm7Qs+rQj/mpga+DA=="
+                        "value": "hl35ZPM5+vGcVxHXCYdAXHbF99+4MUKMaEuvz8iwPwx00vh6SfBbutJSYaUBvoSGSvLTbrXksqEnMMjWUn3KAw=="
                       }
                     },
                     {
@@ -238,7 +238,7 @@
                       "sig": {
                         "alg": "ed25519",
                         "kid": "dwc-post-01",
-                        "value": "pSj0Cikr7WJdR/NT7wxnR6N4NejSkMH/k3HNT+no1FdKhY97cnLxsWiyf9n7Imh/EKOfXB2ck7zbBoHFTHcZDA=="
+                        "value": "OssvTstPJlXCaWkfY59e366lyRsBY8GvDnsbs7ek8xzFPt+y40S5umPeg+YhTw283hySdrxSW+7F1zvZzeaRDw=="
                       }
                     }
                   ]
@@ -455,7 +455,7 @@
                       "sig": {
                         "alg": "ed25519",
                         "kid": "dwc-dit-01",
-                        "value": "wj4BmYNkfcDmkaw52p2HWFfrJcPMd18dUqSn69jbLwmKQgPrwcDffmugOfZJYAex2yh6IzQBgQTpHcTLiaZcCg=="
+                        "value": "qCDHAhWuyJJQz98RsbpQub3JztJr+PNETAuGIPeLpG4pEbP1XZBuYrwx+/Og2r0vM/tk7vRSVCNHMhaL1qpYCg=="
                       }
                     },
                     {
@@ -476,7 +476,7 @@
                       "sig": {
                         "alg": "ed25519",
                         "kid": "dwc-color-01",
-                        "value": "IADfuHBfHfVUqKgTW1B9Kgs1lVMndszQNX/UH9RO9saqPfN64pJnwN/UR7EvVCUE7LSOZUv1apit/RVQuYESAQ=="
+                        "value": "GaBooaR6l7l1RtIhJBm4ZIJTa17+QjPFNMtY4eUjD5olBNNTIzb8I4zYQ4gBbfF27ZZBKgCGYVKGYFIgi0lDBA=="
                       }
                     },
                     {
@@ -497,7 +497,7 @@
                       "sig": {
                         "alg": "ed25519",
                         "kid": "dwc-post-01",
-                        "value": "T29xgqXNdAF9ZKGsjI+IywOAHyayRXiAbfzcexECHMUaoV4F6qx2gAQMWDhQtfiV5N+bE4jS3vR+I8WyYGROAg=="
+                        "value": "Jy8/K1k/ArJJM/aLLJAO3ZJz4MGI6LpLRqKkTFDMTRb7dKXG1YUKuf/bR9IsA3wrGcdIA+nyQzPPugEJGAAeDQ=="
                       }
                     }
                   ]
