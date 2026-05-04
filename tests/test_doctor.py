@@ -456,6 +456,13 @@ def test_main_returns_zero_when_only_warn(tmp_path, monkeypatch, capsys):
     kp, _ = _make_keyring(tmp_path, kids=["k1"],
                           valid_until=(NOW + timedelta(days=7))
                               .strftime("%Y-%m-%dT%H:%M:%SZ"))
+    # `main` doesn't expose a now-injection seam, so wrap run_all_checks to
+    # pin its clock to NOW. Without this, the keyring's NOW+7d expiry slips
+    # past wall-clock time once the suite is more than a week old and the
+    # WARN-path scenario flips to FAIL.
+    real_run_all_checks = doctor.run_all_checks
+    monkeypatch.setattr(doctor, "run_all_checks",
+                        lambda **kw: real_run_all_checks(now=NOW, **kw))
     rc = doctor.main(["--quick"])
     assert rc == 0
     out = capsys.readouterr().out
