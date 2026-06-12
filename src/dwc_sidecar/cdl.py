@@ -9,7 +9,13 @@ extract_cdl_from_amf() returns a list of such dicts (an AMF can carry multiple
 lookTransforms, each with its own SOP/Sat and an 'applied' flag).
 """
 from pathlib import Path
-import xml.etree.ElementTree as ET
+# defusedxml (if installed) hardens against entity-expansion / external-entity
+# attacks in attacker-supplied CDL/AMF files. Stdlib ElementTree on CPython
+# ≥3.8 already refuses entity expansion — this is defence-in-depth.
+try:
+    from defusedxml import ElementTree as ET  # type: ignore[import-not-found]
+except ImportError:
+    import xml.etree.ElementTree as ET
 
 
 def _strip_ns(tag: str) -> str:

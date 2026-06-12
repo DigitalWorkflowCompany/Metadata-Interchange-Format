@@ -7,7 +7,10 @@ Usage:
 import argparse, base64, json, sys, time, uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from .canonical import canonical_bytes, event_hash, file_digest
+from .canonical import (
+    canonical_bytes, event_hash, file_digest,
+    artifact_commitments, make_head, sidecar_custom_data,
+)
 from .signers import get_signer
 
 EXT_OK = {".mxf", ".ari", ".r3d", ".braw", ".mov", ".dpx", ".exr"}
@@ -38,7 +41,7 @@ def find_clip_files(ocf_root: Path) -> list[tuple[Path, Path]]:
 
 
 def build_sidecar(clip: Path, roll_dir: Path, base: Path,
-                   amf_dir: Path, cdl_dir: Path, fdl: Path | None,
+                   amf_dir: Path | None, cdl_dir: Path | None, fdl: Path | None,
                    hash_alg: str, signer) -> dict:
     clip_name = clip.stem
     mhl       = find_mhl_for_roll(roll_dir)
@@ -50,8 +53,10 @@ def build_sidecar(clip: Path, roll_dir: Path, base: Path,
     artifacts = []
 
     def _rel(p: Path) -> str:
+        # is_relative_to, not str.startswith: "/Volumes/Media" startswith
+        # "/Volumes/M" but is not inside it — relative_to would raise.
         p = p.resolve()
-        return f"./{p.relative_to(base).as_posix()}" if str(p).startswith(str(base)) else str(p)
+        return f"./{p.relative_to(base).as_posix()}" if p.is_relative_to(base) else str(p)
 
     def _make_art(path: Path, role, kind, subtype=None, mhl_entry=None,
                    alg="sha256"):
@@ -90,11 +95,15 @@ def build_sidecar(clip: Path, roll_dir: Path, base: Path,
         "tool":   {"name": "batch.py", "version": "0.1"},
         "action": "create",
         "target": f"urn:uuid:{clip_uuid}",
+        # The artifact integrity hashes go inside the signed body, so the
+        # signature covers the claims, not just the narrative (v0.2).
+        "artifacts": artifact_commitments(artifacts),
         "prevHash": None,
     }
     event["hash"] = event_hash(event)
     event["sig"]  = {"alg": "ed25519", "kid": signer.kid,
                       "value": base64.b64encode(signer.sign(canonical_bytes(event))).decode()}
+    head = make_head(event, signer)
 
     struct_type = "digital.movingImage" if clip.suffix.lower() in {".mxf",".mov",".mp4",".r3d",".braw"} else "digital.imageSequence"
     mime        = {"mxf":"application/mxf","mov":"video/quicktime","mp4":"video/mp4",
@@ -121,20 +130,7 @@ def build_sidecar(clip: Path, roll_dir: Path, base: Path,
             "assetFC": {
                 "functionalType": "capture.ocf",
                 "functionalProperties": {
-                    "customData": [
-                        {"domain": "dwc.sidecar.artifacts",
-                         "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                         "schema":    "https://ns.the-dwc.com/sidecar/v0.1/artifacts.schema.json",
-                         "value": artifacts},
-                        {"domain": "dwc.sidecar.events",
-                         "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                         "schema":    "https://ns.the-dwc.com/sidecar/v0.1/events.schema.json",
-                         "value": [event]},
-                        {"domain": "dwc.sidecar.locks",
-                         "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                         "schema":    "https://ns.the-dwc.com/sidecar/v0.1/locks.schema.json",
-                         "value": []},
-                    ]
+                    "customData": sidecar_custom_data(artifacts, [event], [], head)
                 }
             },
             "AssetSC": {
@@ -146,7 +142,7 @@ def build_sidecar(clip: Path, roll_dir: Path, base: Path,
                     "linkset":    {"recordType": "item", "mediaType": mime},
                     "fileDetails": {
                         "fileName":      clip_name,
-                        "filePath":      str(clip.parent.relative_to(base)) + "/" if str(clip.parent).startswith(str(base)) else str(clip.parent)+"/",
+                        "filePath":      str(clip.parent.relative_to(base)) + "/" if clip.parent.is_relative_to(base) else str(clip.parent)+"/",
                         "fileExtension": clip.suffix.lstrip("."),
                         "mediaType":     mime,
                     },
@@ -161,7 +157,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("root", type=Path)
     ap.add_argument("--out-dir", type=Path, default=Path("sidecars"))
-    ap.add_argument("--hash", default="xxh64", choices=["md5","sha1","sha256","sha512","blake3","xxh64","xxh3","c4"])
+    # sha256 default: the clip-integrity artifact backs the "camera original
+    # wasn't substituted" claim, which needs collision resistance. xxh64 is
+    # still selectable for speed parity with MHL v1 — Stage 6 will warn.
+    ap.add_argument("--hash", default="sha256", choices=["md5","sha1","sha256","sha512","blake3","xxh64","xxh3","c4"])
     ap.add_argument("--signing-kid", default="dwc-dit-01")
     ap.add_argument("--validate", action="store_true", help="Run validate.py on each produced sidecar")
     args = ap.parse_args()

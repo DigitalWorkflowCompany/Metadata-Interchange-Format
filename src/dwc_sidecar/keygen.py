@@ -38,16 +38,21 @@ def _emit_keyring_entry(
     pub_raw: bytes,
     valid_from: str,
     valid_until: str,
+    actor: str | None = None,
 ) -> None:
-    entry = {
-        kid: {
-            "publicKey":        _b64(pub_raw),
-            "validFrom":        valid_from,
-            "validUntil":       valid_until,
-            "revokedAt":        None,
-            "revocationReason": None,
-        }
+    body = {
+        "publicKey":        _b64(pub_raw),
+        "validFrom":        valid_from,
+        "validUntil":       valid_until,
+        "revokedAt":        None,
+        "revocationReason": None,
     }
+    # Bind the key to an actor URN: Stage 4 then FAILs any event signed by this
+    # key that claims a different actor.id — the prerequisite for meaningful
+    # two-party (threshold-lock / transfer) proofs.
+    if actor:
+        body["actor"] = actor
+    entry = {kid: body}
     print("\n--- paste into keyring.json under .keys ---")
     print(json.dumps(entry, indent=2))
     print("--- end ---\n")
@@ -87,6 +92,7 @@ def _keygen_keychain(kid: str, service: str) -> bytes:
 
 
 def _keygen_local(kid: str, path: Path) -> bytes:
+    import os
     path = Path(path)
     bundle: dict[str, str] = {}
     if path.exists():
@@ -102,8 +108,13 @@ def _keygen_local(kid: str, path: Path) -> bytes:
         format=serialization.PrivateFormat.Raw,
         encryption_algorithm=serialization.NoEncryption(),
     ))
-    path.write_text(json.dumps(bundle, indent=2))
-    print(f"Wrote private key → {path}")
+    # 0o600: plaintext private keys must not be group/world-readable — post
+    # houses run shared Linux NAS / render nodes where the default umask leaks.
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        f.write(json.dumps(bundle, indent=2))
+    os.chmod(path, 0o600)
+    print(f"Wrote private key → {path}  (mode 0600)")
     return priv.public_key().public_bytes(
         encoding=serialization.Encoding.Raw,
         format=serialization.PublicFormat.Raw,
@@ -164,6 +175,11 @@ def main() -> int:
                           "created outside dwc — see each backend's docstring.")
     ap.add_argument("--service", default="dwc-sidecar",
                      help="Keychain service name (default: dwc-sidecar)")
+    ap.add_argument("--actor",
+                     help="Bind this key to an actor URN (e.g. urn:email:post@the-dwc.com "
+                          "or a bare e-mail, which is normalised to urn:email:<addr>). "
+                          "Stage 4 then rejects events signed by this key under any other "
+                          "actor.id. Omit to leave the key unbound.")
     ap.add_argument("--valid-from", default=_iso_days(0),
                      help="ISO-8601 UTC timestamp; defaults to now")
     ap.add_argument("--valid-until", default=_iso_days(365),
@@ -206,7 +222,10 @@ def main() -> int:
             args.label, args.pin_env, args.pin,
         )
 
-    _emit_keyring_entry(args.kid, pub_raw, args.valid_from, args.valid_until)
+    actor = args.actor
+    if actor and not actor.startswith("urn:"):
+        actor = f"urn:email:{actor}"
+    _emit_keyring_entry(args.kid, pub_raw, args.valid_from, args.valid_until, actor)
     return 0
 
 

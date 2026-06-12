@@ -52,7 +52,7 @@ The configured signer for the *first* kid in the keyring signs a 32-byte throwaw
 
 ### 9. Hosted schema drift *(skipped on `--quick`)*
 
-Each schema bundled in this install byte-matches the canonical hosted copy at `https://ns.the-dwc.com/sidecar/v0.1/`. **FAIL** on drift — your local schemas have been mutated (sketchy) or the hosted copy has changed (someone shipped a non-immutable update, which is a v0.1 invariant violation). Remedy: `pipx reinstall dwc-sidecar` to restore bundled schemas, or open an issue if the hosted copy diverged.
+Each schema bundled in this install byte-matches the canonical hosted copy at `https://ns.the-dwc.com/sidecar/` (per the schema's own `$id` version). **FAIL** on drift — your local schemas have been mutated (sketchy) or the hosted copy has changed (someone shipped a non-immutable update, which violates the published-version immutability invariant). Remedy: `pipx reinstall dwc-sidecar` to restore bundled schemas, or open an issue if the hosted copy diverged.
 
 ### 10. `.watch-state.json`
 

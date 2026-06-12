@@ -93,8 +93,8 @@
           "customData": [
             {
               "domain": "dwc.sidecar.artifacts",
-              "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-              "schema": "https://ns.the-dwc.com/sidecar/v0.1/artifacts.schema.json",
+              "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+              "schema": "https://ns.the-dwc.com/sidecar/v0.2/artifacts.schema.json",
               "value": [
                 {
                   "id": "urn:uuid:af8a0001-0000-0000-0000-000000000001",
@@ -143,8 +143,8 @@
             },
             {
               "domain": "dwc.sidecar.events",
-              "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-              "schema": "https://ns.the-dwc.com/sidecar/v0.1/events.schema.json",
+              "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+              "schema": "https://ns.the-dwc.com/sidecar/v0.2/events.schema.json",
               "value": [
                 {
                   "seq": 1,
@@ -160,11 +160,41 @@
                   "action": "create",
                   "target": "urn:uuid:0190a5e2-7c3f-7b4a-a1b2-3c4d5e6f7890",
                   "prevHash": null,
-                  "hash": "sha256:d6a611309c41bd522985b9f251a526f7b4dd250d720b4a7097313282112583b9",
+                  "artifacts": [
+                    {
+                      "id": "urn:uuid:af8a0001-0000-0000-0000-000000000001",
+                      "hash": {
+                        "alg": "sha256",
+                        "value": "746285cf7774d723f46593f146168426eb65b2ac169e67764fd65dcbe40e75d4"
+                      }
+                    },
+                    {
+                      "id": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
+                      "hash": {
+                        "alg": "sha256",
+                        "value": "1001e48483ab149cd547e2f6b127a343f3c39be55d6476512261da2b9aa15f83"
+                      }
+                    },
+                    {
+                      "id": "urn:uuid:af8a0003-0000-0000-0000-000000000003",
+                      "hash": {
+                        "alg": "sha256",
+                        "value": "e08a5551aefeaacd856ccc6c2762067b5d4c0531c253a63af0a47ac656a4ce0b"
+                      }
+                    },
+                    {
+                      "id": "urn:uuid:af8a0004-0000-0000-0000-000000000004",
+                      "hash": {
+                        "alg": "sha256",
+                        "value": "1099bef5325c7d63d71931c42ca6bc3ec5c3fd8eb53ad70e7d59907a7d136971"
+                      }
+                    }
+                  ],
+                  "hash": "sha256:53690a0c7d4baebc4248ac01b8f5da97d149625dbccd72ae31bddcba215e0538",
                   "sig": {
                     "alg": "ed25519",
                     "kid": "dwc-dit-01",
-                    "value": "VUILEZOBEPzI233UdDBMviULpxWiLHsq6udYHLgsT88GVvVIda8JU5n282g3d3/YoqqNoyPFG/EPF3pquseUBg=="
+                    "value": "ABKaplgjI++eGw6H3BV7f+2CmPetL1jUL+lRIeRVz0Mtrxx+luzEGKgH9yu2GcXt5dEo4AstkI1xWvBaAxh3Cg=="
                   }
                 },
                 {
@@ -180,12 +210,21 @@
                   },
                   "action": "attach",
                   "target": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
-                  "prevHash": "sha256:d6a611309c41bd522985b9f251a526f7b4dd250d720b4a7097313282112583b9",
-                  "hash": "sha256:4d7b69c551beeb22c31dc9c8dbc0822f3d9cddbb01dea86cd7e041c00cce56cf",
+                  "prevHash": "sha256:53690a0c7d4baebc4248ac01b8f5da97d149625dbccd72ae31bddcba215e0538",
+                  "artifacts": [
+                    {
+                      "id": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
+                      "hash": {
+                        "alg": "sha256",
+                        "value": "1001e48483ab149cd547e2f6b127a343f3c39be55d6476512261da2b9aa15f83"
+                      }
+                    }
+                  ],
+                  "hash": "sha256:2b09c915505be53b67726ea58dfc147f36b99f61c6f59873a6a980aef0f5c96e",
                   "sig": {
                     "alg": "ed25519",
                     "kid": "dwc-color-01",
-                    "value": "hl35ZPM5+vGcVxHXCYdAXHbF99+4MUKMaEuvz8iwPwx00vh6SfBbutJSYaUBvoSGSvLTbrXksqEnMMjWUn3KAw=="
+                    "value": "Mbdk4ULD7ZCIdTR6pVakLruLo8uCj5/3hi4OOA86DqRbPtLcF+jzMExNk4TUgvjODCMZGtmjNcotIaTZVIh5AQ=="
                   }
                 },
                 {
@@ -201,34 +240,84 @@
                   },
                   "action": "lock",
                   "target": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
-                  "prevHash": "sha256:4d7b69c551beeb22c31dc9c8dbc0822f3d9cddbb01dea86cd7e041c00cce56cf",
-                  "hash": "sha256:60aadd4ffa6e13fda98c409aeed0fb2c8378af1666a77880407d3c40224df62a",
+                  "prevHash": "sha256:2b09c915505be53b67726ea58dfc147f36b99f61c6f59873a6a980aef0f5c96e",
+                  "hash": "sha256:380a7078fce241892c3c19e915b467535fe093c2620c0c3c783dd3b615b69cdf",
                   "sig": {
                     "alg": "ed25519",
                     "kid": "dwc-post-01",
-                    "value": "OssvTstPJlXCaWkfY59e366lyRsBY8GvDnsbs7ek8xzFPt+y40S5umPeg+YhTw283hySdrxSW+7F1zvZzeaRDw=="
+                    "value": "s0Wf1jj3iYWoFGkTozgHRZK34DoJuQt/WLNWLq4BRIxmEfAL+Vi8sOkV8+yB1AzJ3iHARyQbIiBcjsm9c8r+Ag=="
+                  }
+                },
+                {
+                  "seq": 4,
+                  "ts": "2026-04-20T18:05:00Z",
+                  "actor": {
+                    "id": "urn:email:colorist@the-dwc.com",
+                    "role": "Colorist"
+                  },
+                  "tool": {
+                    "name": "DaVinci Resolve",
+                    "version": "20.1"
+                  },
+                  "action": "lock",
+                  "target": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
+                  "prevHash": "sha256:380a7078fce241892c3c19e915b467535fe093c2620c0c3c783dd3b615b69cdf",
+                  "hash": "sha256:865eeaa928413362f85d7264f956575e934f9eceeb864347da5720f629bfdf8f",
+                  "sig": {
+                    "alg": "ed25519",
+                    "kid": "dwc-color-01",
+                    "value": "39YuA+lRRfnNbOFzrgfcz67jfn0o70FdNaZDHJklnF6kDDqyC64MbMBZf1dvoH4PpqYH+sXNyqqWvKC8Ux4eCw=="
                   }
                 }
               ]
             },
             {
               "domain": "dwc.sidecar.locks",
-              "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-              "schema": "https://ns.the-dwc.com/sidecar/v0.1/locks.schema.json",
+              "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+              "schema": "https://ns.the-dwc.com/sidecar/v0.2/locks.schema.json",
               "value": [
                 {
                   "target": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
                   "scope": "artifact",
                   "by": "urn:email:post@the-dwc.com",
                   "at": "2026-04-20T18:00:00Z",
-                  "reason": "Color intent approved for VFX pull; AMF frozen.",
-                  "sig": {
-                    "alg": "ed25519",
-                    "kid": "dwc-post-01",
-                    "value": "BASE64..."
-                  }
+                  "reason": "Color intent frozen for VFX pull \u2014 colorist and post both attest (2-of-2).",
+                  "policy": {
+                    "m": 2,
+                    "of": [
+                      "dwc-color-01",
+                      "dwc-post-01"
+                    ]
+                  },
+                  "sigs": [
+                    {
+                      "alg": "ed25519",
+                      "kid": "dwc-color-01",
+                      "value": "Z3ShRRXVXfyRMnr9tIiKwrMYWqSE4x43vnCL5M0XvQt7J8bhDln1aNSlGHtDRBRPl1xPrZRrH1UnI7QvJfZPCQ=="
+                    },
+                    {
+                      "alg": "ed25519",
+                      "kid": "dwc-post-01",
+                      "value": "VvzKtIJJpXp+Re5thwJecRRzeD52hf2XSygA3QbqPtnBzpifrLGhHHAWGzx+daxntQQITbK2CON6w5tSy/vkAA=="
+                    }
+                  ]
                 }
               ]
+            },
+            {
+              "domain": "dwc.sidecar.head",
+              "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+              "schema": "https://ns.the-dwc.com/sidecar/v0.2/head.schema.json",
+              "value": {
+                "seq": 4,
+                "tipHash": "sha256:865eeaa928413362f85d7264f956575e934f9eceeb864347da5720f629bfdf8f",
+                "ts": "2026-04-20T18:05:00Z",
+                "sig": {
+                  "alg": "ed25519",
+                  "kid": "dwc-color-01",
+                  "value": "UoOANPY4bfil2rdP1/djl8J3PlUOakyFZEUv49KJuTzViVXGa2cTGSZTv8qzjudgST7WGAPX+SmbVZMIlGT7DQ=="
+                }
+              }
             }
           ]
         }
@@ -328,8 +417,8 @@
           "customData": [
             {
               "domain": "dwc.sidecar.artifacts",
-              "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-              "schema": "https://ns.the-dwc.com/sidecar/v0.1/artifacts.schema.json",
+              "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+              "schema": "https://ns.the-dwc.com/sidecar/v0.2/artifacts.schema.json",
               "value": [
                 {
                   "id": "urn:uuid:af8a0005-0000-0000-0000-000000000005",
@@ -345,8 +434,8 @@
             },
             {
               "domain": "dwc.sidecar.events",
-              "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-              "schema": "https://ns.the-dwc.com/sidecar/v0.1/events.schema.json",
+              "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+              "schema": "https://ns.the-dwc.com/sidecar/v0.2/events.schema.json",
               "value": [
                 {
                   "seq": 1,
@@ -362,20 +451,44 @@
                   "action": "create",
                   "target": "urn:uuid:0190a5e2-7c3f-7b4a-a1b2-3c4d5e6f78f0",
                   "prevHash": null,
-                  "hash": "sha256:5988908931739cedc53a29aae2e3f421444fd6284c04199fe6937b6f46db7bc8",
+                  "artifacts": [
+                    {
+                      "id": "urn:uuid:af8a0005-0000-0000-0000-000000000005",
+                      "hash": {
+                        "alg": "sha256",
+                        "value": "1001e48483ab149cd547e2f6b127a343f3c39be55d6476512261da2b9aa15f83"
+                      }
+                    }
+                  ],
+                  "hash": "sha256:d3e276d4919a3eddf76c0e6962435add150bb49c0039eebcd73fa995047d817c",
                   "sig": {
                     "alg": "ed25519",
-                    "kid": "dwc-color-01",
-                    "value": "T86qMA7CaLIG/daFhwfwEkzNCxGiq0uGwQoqpQQenSDshuVdl70p/Dhkf3crCnJkptygNmeMorAmZlExZPL/DQ=="
+                    "kid": "dwc-transcode-01",
+                    "value": "+5ZKiQM/8yShEYZlaLpE4Ug8d4BsuW586b4mkZHF0Fr5EiEnKsWayHWou1K9KnpkLVA6fqIT9oBQOtMjOC9WAg=="
                   }
                 }
               ]
             },
             {
               "domain": "dwc.sidecar.locks",
-              "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-              "schema": "https://ns.the-dwc.com/sidecar/v0.1/locks.schema.json",
+              "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+              "schema": "https://ns.the-dwc.com/sidecar/v0.2/locks.schema.json",
               "value": []
+            },
+            {
+              "domain": "dwc.sidecar.head",
+              "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+              "schema": "https://ns.the-dwc.com/sidecar/v0.2/head.schema.json",
+              "value": {
+                "seq": 1,
+                "tipHash": "sha256:d3e276d4919a3eddf76c0e6962435add150bb49c0039eebcd73fa995047d817c",
+                "ts": "2026-04-20T10:00:00Z",
+                "sig": {
+                  "alg": "ed25519",
+                  "kid": "dwc-transcode-01",
+                  "value": "Ir0R7v83E46kauAVGHx6gehNDctDeSYU1CE0WPJmxcJltWjJefR09MewF+X+k0HjOkGR9f04m2gs4PX3ZLOKCg=="
+                }
+              }
             }
           ]
         }

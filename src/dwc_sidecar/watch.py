@@ -16,9 +16,10 @@ Usage:
                                       [--interval 2] [--stable 3]
                                       [--signing-kid dwc-dit-01]
 """
-import argparse, base64, hashlib, json, signal, subprocess, sys, time
+import argparse, base64, hashlib, json, os, signal, subprocess, sys, tempfile, time
 from datetime import datetime, timezone
 from pathlib import Path
+from ._io        import atomic_write_text
 from .mhl_walker import (
     build_sidecar_from_mhl_entry, _pick_hash_from_mhl_entry, CLIP_EXTS,
 )
@@ -48,6 +49,11 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: f.read(1 << 20), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+# Shared crash-safe writer (moved to _io so append/lock/transfer/bundle reuse it).
+# Kept as a module-level name so existing callers and tests stay unchanged.
+_atomic_write_text = atomic_write_text
 
 
 class Watcher:
@@ -93,11 +99,14 @@ class Watcher:
                     self._emitted = loaded_emitted[-EMITTED_CAP:]
                 _log("RESUME", f"{len(self._processed)} MHL(s) previously processed, "
                                f"{len(self._emitted)} recent emission(s)")
-            except Exception:
-                pass
+            except Exception as e:
+                # A reset processed-set means every MHL re-emits — never do
+                # that silently. (Writes are atomic, so this is rare.)
+                _log("WARN", f"state file {STATE} unreadable ({e}) — starting with an "
+                             f"empty processed set; existing sidecars will be re-evaluated")
 
     def _save_state(self):
-        STATE.write_text(json.dumps({
+        _atomic_write_text(STATE, json.dumps({
             "processed_mhl_sha256": sorted(self._processed),
             "emitted":              self._emitted[-EMITTED_CAP:],
             "savedAt":              _now_iso(),
@@ -158,8 +167,16 @@ class Watcher:
                 continue
 
             if st.st_size != prev["size"] or st.st_mtime != prev["mtime"]:
-                # still being written
+                # still being written (or rewritten — drop the processed marker
+                # so the new content gets hashed once it stabilises)
                 prev.update({"size": st.st_size, "mtime": st.st_mtime, "last_changed": now})
+                prev.pop("processed_sha", None)
+                continue
+
+            # already processed at this size/mtime — skip without re-hashing.
+            # Without this short-circuit every stable MHL gets a full SHA-256
+            # per poll cycle: real recurring I/O on a multi-thousand-MHL tree.
+            if "processed_sha" in prev:
                 continue
 
             # unchanged — has it been stable long enough?
@@ -175,12 +192,14 @@ class Watcher:
                 continue
 
             if sha in self._processed:
-                # mark so we don't log it again next loop
+                # mark so we don't hash or log it again next loop
                 prev["processed_sha"] = sha
                 continue
 
             _log("STABLE", f"{mhl.relative_to(self.root)}  sha256:{sha[:16]}…")
             self._process(mhl, sha)
+            if sha in self._processed:   # only short-circuit successes — parse
+                prev["processed_sha"] = sha   # failures keep retrying each cycle
 
     # ---------- processing ----------
 
@@ -223,7 +242,7 @@ class Watcher:
             if out is None:
                 continue  # REFRESH: existing sidecar is identical, do nothing
 
-            out.write_text(json.dumps(doc, indent=2) + "\n")
+            _atomic_write_text(out, json.dumps(doc, indent=2) + "\n")
             written += 1
             if action == "conflict":
                 _log("CONFLICT", f"{clip_abs.stem}: wrote {out.name} alongside existing "
@@ -270,41 +289,70 @@ class Watcher:
                             return h["alg"], h["value"]
         return None
 
+    def _suffixed_path(self, target: Path, stem: str, ci: tuple[str, str]) -> Path:
+        """Filename for a disputed sidecar, suffixed by its clip-integrity hash
+        (CLAUDE.md convention #3: the suffix IS the disambiguator). A prefix
+        collision between two *different* full hashes lengthens the prefix
+        instead of silently masking a genuine hash disagreement."""
+        val = ci[1]
+        for n in (8, 16, 32):
+            if n >= len(val):
+                break
+            p = target.with_name(f"{stem}.{val[:n]}.omc.json")
+            if not p.exists():
+                return p
+            try:
+                if self._clip_integrity_hash(json.loads(p.read_text())) == ci:
+                    return p  # same claim → same file
+            except Exception:
+                pass  # unreadable occupant → lengthen rather than overwrite
+        return target.with_name(f"{stem}.{val}.omc.json")
+
     def _resolve_collision(self, target: Path, new_doc, mhl_sha: str):
         """Decide where to write. Returns (path | None, action):
              ('write')    — first sidecar for this clip
-             ('refresh')  — existing sidecar declares the same clip-integrity hash; keep it
-             ('conflict') — two MHLs disagree on the clip's hash; suffix both
-        """
-        if not target.exists():
-            return target, "write"
-        try:
-            existing = json.loads(target.read_text())
-        except Exception:
-            return target, "write"  # unreadable → overwrite
+             ('refresh')  — a sidecar with the same clip-integrity hash exists; keep it
+             ('conflict') — MHLs disagree on the clip's hash; every version is suffixed
 
+        Once a clip is disputed (suffixed siblings exist), nothing reclaims the
+        clean filename — a third MHL writing back to `stem.omc.json` would look
+        like an undisputed sidecar while two contested versions sit next to it."""
+        stem = target.stem.replace(".omc", "")
+        siblings = [p for p in target.parent.glob(f"{stem}.*.omc.json") if p != target]
         new_ci = self._clip_integrity_hash(new_doc)
-        old_ci = self._clip_integrity_hash(existing)
-        if new_ci is None or old_ci is None:
-            return target, "write"  # can't compare → overwrite
 
-        if new_ci == old_ci:
-            _log("REFRESH", f"{target.name}: identical clip hash, existing sidecar retained")
+        if not target.exists() and not siblings:
+            return target, "write"
+
+        # Existing claims: the clean file (if present) plus any suffixed versions
+        claims: list[tuple[Path, tuple[str, str] | None]] = []
+        for p in ([target] if target.exists() else []) + siblings:
+            try:
+                claims.append((p, self._clip_integrity_hash(json.loads(p.read_text()))))
+            except Exception:
+                claims.append((p, None))
+
+        if new_ci is None or all(ci is None for _, ci in claims):
+            return target, "write"  # can't compare → overwrite clean name
+
+        match = next((p for p, ci in claims if ci == new_ci), None)
+        if match is not None:
+            _log("REFRESH", f"{match.name}: identical clip hash, existing sidecar retained")
             self._stats["refreshed"] += 1
             return None, "refresh"
 
-        # CONFLICT: two MHLs disagree. Preserve the existing one by renaming, then
-        # write the new one under its own suffix. Neither gets the "clean" filename —
-        # that's visible evidence of disagreement.
-        stem = target.stem.replace(".omc", "")
-        existing_suffix  = old_ci[1][:8]
-        new_suffix       = new_ci[1][:8]
-        preserved = target.with_name(f"{stem}.{existing_suffix}.omc.json")
-        new_path  = target.with_name(f"{stem}.{new_suffix}.omc.json")
-        if target.exists() and not preserved.exists():
-            target.rename(preserved)
-            _log("CONFLICT", f"{stem}: preserved existing as {preserved.name} "
-                              f"(clip hash {old_ci[0]}={old_ci[1][:16]}…)")
+        # CONFLICT: disagreement. Preserve the clean-named version under its own
+        # suffix; the new one gets its own suffix. Nobody keeps the "clean"
+        # filename — that's visible evidence of disagreement.
+        if target.exists():
+            old_ci = next(ci for p, ci in claims if p == target)
+            if old_ci is not None:
+                preserved = self._suffixed_path(target, stem, old_ci)
+                if not preserved.exists():
+                    target.rename(preserved)
+                    _log("CONFLICT", f"{stem}: preserved existing as {preserved.name} "
+                                      f"(clip hash {old_ci[0]}={old_ci[1][:16]}…)")
+        new_path = self._suffixed_path(target, stem, new_ci)
         self._stats["conflicts"] += 1
         return new_path, "conflict"
 

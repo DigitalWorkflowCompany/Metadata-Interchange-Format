@@ -27,18 +27,26 @@ jobs:
     runs-on: macos-14   # Homebrew runs natively on macOS runners
     if: ${{ !github.event.release.prerelease }}
     steps:
+      # Workflow inputs and derived values are passed via env:, never
+      # interpolated into run: blocks — `${{ inputs.tag }}` inline is a shell
+      # injection in a job holding HOMEBREW_TAP_TOKEN.
       - name: Resolve release tag
         id: tag
+        env:
+          INPUT_TAG:   ${{ inputs.tag }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          if [ -n "${{ inputs.tag }}" ]; then
-            echo "value=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          if [ -n "$INPUT_TAG" ]; then
+            echo "value=$INPUT_TAG" >> "$GITHUB_OUTPUT"
           else
-            echo "value=${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+            echo "value=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Skip non-CLI tags (e.g. v*-mac)
+        env:
+          TAG: ${{ steps.tag.outputs.value }}
         run: |
-          tag="${{ steps.tag.outputs.value }}"
+          tag="$TAG"
           if [[ "$tag" == *-mac ]]; then
             echo "::notice::Tag $tag is the macOS app release, not the CLI — skipping CLI formula bump."
             exit 0
@@ -51,9 +59,11 @@ jobs:
 
       - name: Compute sdist URL + sha256
         id: sdist
+        env:
+          TAG: ${{ steps.tag.outputs.value }}
         run: |
           set -euo pipefail
-          tag="${{ steps.tag.outputs.value }}"
+          tag="$TAG"
           version="${tag#v}"
           url="https://github.com/${{ github.repository }}/releases/download/${tag}/dwc_sidecar-${version}.tar.gz"
           # Wait up to 60s for the asset to be reachable (race between
@@ -82,6 +92,9 @@ jobs:
           # stored as a repo secret. brew bump-formula-pr opens the PR
           # under this token's account.
           HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          SDIST_URL:     ${{ steps.sdist.outputs.url }}
+          SDIST_SHA256:  ${{ steps.sdist.outputs.sha256 }}
+          SDIST_VERSION: ${{ steps.sdist.outputs.version }}
         run: |
           set -euo pipefail
           if [ -z "${HOMEBREW_GITHUB_API_TOKEN:-}" ]; then
@@ -92,7 +105,7 @@ jobs:
           brew bump-formula-pr \
             --no-browse \
             --no-fork \
-            --url    "${{ steps.sdist.outputs.url }}" \
-            --sha256 "${{ steps.sdist.outputs.sha256 }}" \
-            --message "Update Python resources for v${{ steps.sdist.outputs.version }}" \
+            --url    "$SDIST_URL" \
+            --sha256 "$SDIST_SHA256" \
+            --message "Update Python resources for v$SDIST_VERSION" \
             digitalworkflowcompany/tap/dwc-sidecar

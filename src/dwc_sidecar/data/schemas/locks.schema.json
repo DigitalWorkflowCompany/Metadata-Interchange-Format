@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://ns.the-dwc.com/sidecar/v0.1/locks.schema.json",
+  "$id": "https://ns.the-dwc.com/sidecar/v0.2/locks.schema.json",
   "title": "DWC Sidecar — Locks",
-  "description": "Signed lock records — a derived view of 'lock'/'unlock' events. Carried inside an OMC Asset's customData under domain 'dwc.sidecar.locks'. Cross-reference to the corresponding signed event entry is enforced outside JSON Schema.",
+  "description": "Signed lock records — a derived view of 'lock'/'unlock' events. Carried inside an OMC Asset's customData under domain 'dwc.sidecar.locks'. A lock is EITHER single-signer (legacy: one 'sig') OR an m-of-n threshold lock (a 'policy' naming the eligible kids and the count required, plus a 'sigs' array of co-signatures). Every co-signature in a threshold lock signs the SAME bytes — JCS(lock minus 'sig'/'sigs') — so the policy itself is under every signature; editing m or of invalidates all of them. Cross-reference to the corresponding signed event entries and the count of valid event-backed co-signers are enforced outside JSON Schema (Stage 5).",
 
   "type": "array",
   "minItems": 0,
@@ -25,9 +25,25 @@
       }
     },
 
+    "policy": {
+      "type": "object",
+      "required": ["m", "of"],
+      "additionalProperties": false,
+      "description": "Threshold requirement: at least 'm' distinct kids drawn from 'of' must co-sign. 'of' must contain at least 'm' entries — enforced by the validator (Stage 5), since JSON Schema can't compare two sibling values.",
+      "properties": {
+        "m":  { "type": "integer", "minimum": 1 },
+        "of": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+
     "lock": {
       "type": "object",
-      "required": ["target", "scope", "by", "at", "sig"],
+      "required": ["target", "scope", "by", "at"],
       "additionalProperties": false,
       "properties": {
         "target": { "$ref": "#/$defs/urn" },
@@ -40,12 +56,30 @@
         "by":     { "$ref": "#/$defs/urn" },
         "at":     { "type": "string", "format": "date-time" },
         "reason": { "type": "string" },
-        "sig":    { "$ref": "#/$defs/signature" }
+        "sig":    { "$ref": "#/$defs/signature" },
+        "policy": { "$ref": "#/$defs/policy" },
+        "sigs":   {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/signature" }
+        }
       },
       "allOf": [
         {
           "if":   { "properties": { "scope": { "const": "field" } } },
           "then": { "required": ["field"] }
+        }
+      ],
+      "oneOf": [
+        {
+          "title": "single-signer lock",
+          "required": ["sig"],
+          "not": { "anyOf": [ { "required": ["policy"] }, { "required": ["sigs"] } ] }
+        },
+        {
+          "title": "m-of-n threshold lock",
+          "required": ["policy", "sigs"],
+          "not": { "required": ["sig"] }
         }
       ]
     }

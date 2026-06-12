@@ -14,7 +14,10 @@ Usage:
 import argparse, base64, json, sys, time, uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from .canonical import canonical_bytes, event_hash, file_digest, HASH_ALGS
+from .canonical import (
+    canonical_bytes, event_hash, file_digest, HASH_ALGS,
+    artifact_commitments, make_head, sidecar_custom_data,
+)
 from .mhl import parse_mhl
 from .signers import get_signer
 
@@ -45,8 +48,10 @@ def _pick_hash_from_mhl_entry(entry: dict) -> tuple[str, str] | None:
 
 
 def _rel(p: Path, base: Path) -> str:
+    # is_relative_to, not str.startswith: "/Volumes/Media" startswith
+    # "/Volumes/M" but is not inside it — relative_to would raise.
     p = p.resolve()
-    return f"./{p.relative_to(base).as_posix()}" if str(p).startswith(str(base)) else str(p)
+    return f"./{p.relative_to(base).as_posix()}" if p.is_relative_to(base) else str(p)
 
 
 def _aux_artifact(path: Path, base: Path, role: str, kind: str, subtype=None):
@@ -106,11 +111,15 @@ def build_sidecar_from_mhl_entry(
         "tool":   {"name": "mhl_walker.py", "version": "0.1"},
         "action": "create",
         "target": f"urn:uuid:{clip_uuid}",
+        # The artifact integrity hashes go inside the signed body, so the
+        # signature covers the claims, not just the narrative (v0.2).
+        "artifacts": artifact_commitments(artifacts),
         "prevHash": None,
     }
     event["hash"] = event_hash(event)
     event["sig"]  = {"alg": "ed25519", "kid": signer.kid,
                       "value": base64.b64encode(signer.sign(canonical_bytes(event))).decode()}
+    head = make_head(event, signer)
 
     ext = clip_abs.suffix.lower().lstrip(".")
     struct_type, mime = MIME_MAP.get(ext, ("digital.movingImage", "application/octet-stream"))
@@ -134,20 +143,7 @@ def build_sidecar_from_mhl_entry(
             "assetFC": {
                 "functionalType": "capture.ocf",
                 "functionalProperties": {
-                    "customData": [
-                        {"domain": "dwc.sidecar.artifacts",
-                         "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                         "schema":    "https://ns.the-dwc.com/sidecar/v0.1/artifacts.schema.json",
-                         "value": artifacts},
-                        {"domain": "dwc.sidecar.events",
-                         "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                         "schema":    "https://ns.the-dwc.com/sidecar/v0.1/events.schema.json",
-                         "value": [event]},
-                        {"domain": "dwc.sidecar.locks",
-                         "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                         "schema":    "https://ns.the-dwc.com/sidecar/v0.1/locks.schema.json",
-                         "value": []},
-                    ]
+                    "customData": sidecar_custom_data(artifacts, [event], [], head)
                 }
             },
             "AssetSC": {
@@ -160,7 +156,7 @@ def build_sidecar_from_mhl_entry(
                     "fileDetails": {
                         "fileName":      clip_name,
                         "filePath":      f"{clip_abs.parent.relative_to(base).as_posix()}/"
-                                          if str(clip_abs.parent).startswith(str(base)) else str(clip_abs.parent)+"/",
+                                          if clip_abs.parent.is_relative_to(base) else str(clip_abs.parent)+"/",
                         "fileExtension": ext,
                         "mediaType":     mime,
                     },
@@ -233,7 +229,7 @@ def main():
                 continue
             clip_abs = (roll_dir / f).resolve()
             if not clip_abs.exists():
-                print(f"  skip (missing clip): {clip_abs.relative_to(base) if str(clip_abs).startswith(str(base)) else clip_abs}")
+                print(f"  skip (missing clip): {clip_abs.relative_to(base) if clip_abs.is_relative_to(base) else clip_abs}")
                 continue
             picked = _pick_hash_from_mhl_entry(entry)
             if picked is None:

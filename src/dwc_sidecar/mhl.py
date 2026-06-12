@@ -7,7 +7,13 @@ Hash alg keys are normalised to lowercase (sha256, md5, sha1, xxh64, xxh3, blake
 MHL v1 uses 'xxhash64be' / 'xxhash64' — both are mapped to 'xxh64'.
 """
 from pathlib import Path
-import xml.etree.ElementTree as ET
+# defusedxml (if installed) hardens against entity-expansion / external-entity
+# attacks in attacker-supplied MHLs. Stdlib ElementTree on CPython ≥3.8 already
+# refuses entity expansion, so the fallback is safe — this is defence-in-depth.
+try:
+    from defusedxml import ElementTree as ET  # type: ignore[import-not-found]
+except ImportError:
+    import xml.etree.ElementTree as ET
 import yaml  # type: ignore[import-not-found]
 
 _V1_ALG_MAP = {
@@ -30,6 +36,9 @@ def _strip_ns(tag: str) -> str:
 
 def parse_mhl_v1(text: str) -> dict:
     root = ET.fromstring(text)
+    if _strip_ns(root.tag) != "hashlist":
+        raise ValueError(f"not an MHL v1 document: root element <{_strip_ns(root.tag)}>, "
+                         f"expected <hashlist>")
     out = {"Version": root.attrib.get("version", "1"), "Hashes": []}
     for child in root:
         if _strip_ns(child.tag) != "hash":
@@ -52,17 +61,22 @@ def parse_mhl_v1(text: str) -> dict:
 
 def parse_mhl_v2(text: str) -> dict:
     doc = yaml.safe_load(text) or {}
-    # Already matches our internal shape except hash alg keys may be mixed case
+    # Already matches our internal shape except hash alg keys may be mixed
+    # case ("SHA256", "xxHash64") — normalise case-insensitively.
     for h in doc.get("Hashes") or []:
         for k in list(h.keys()):
-            if k in _V1_ALG_MAP:
-                h[_V1_ALG_MAP[k]] = h.pop(k)
+            lk = k.lower()
+            if lk in _V1_ALG_MAP:
+                h[_V1_ALG_MAP[lk]] = h.pop(k)
     return doc
 
 
 def parse_mhl(path: Path) -> dict:
-    text = Path(path).read_text()
+    # utf-8-sig: Windows DIT tools (ShotPut Pro) emit BOM-prefixed XML, and a
+    # BOM is not whitespace — without this the file falls through to the YAML
+    # parser and silently mis-parses.
+    text = Path(path).read_text(encoding="utf-8-sig")
     lead = text.lstrip()
-    if lead.startswith("<?xml") or lead.startswith("<hashlist"):
+    if lead.startswith("<"):
         return parse_mhl_v1(text)
     return parse_mhl_v2(text)

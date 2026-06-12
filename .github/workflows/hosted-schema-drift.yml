@@ -1,8 +1,14 @@
 name: hosted-schema-drift
 
-# Fails the build if the schemas served at https://ns.the-dwc.com/sidecar/v0.1/
-# disagree with the ones in this repo. Tolerates 404 so the check is safe to run
-# before the Pages site is live.
+# Fails the build if the schemas served at https://ns.the-dwc.com/sidecar/
+# disagree with the ones in this repo:
+#   - frozen, already-published versions (tools/publish-schemas/frozen/<v>/)
+#     must match their hosted copies byte-for-byte — published URLs are
+#     immutable;
+#   - the active version (src/dwc_sidecar/data/schemas/, URL taken from each
+#     schema's own $id) must match once deployed.
+# Tolerates 404 for the active version so the check is safe to run before a
+# new version is live.
 
 on:
   pull_request:
@@ -22,33 +28,53 @@ jobs:
       - name: Byte-compare hosted schemas against repo
         run: |
           python3 <<'PY'
-          import hashlib, sys, urllib.request, urllib.error
+          import hashlib, json, sys, urllib.request, urllib.error
           from pathlib import Path
 
-          BASE  = "https://ns.the-dwc.com/sidecar/v0.1"
-          FILES = ["artifacts.schema.json", "events.schema.json", "locks.schema.json"]
-          REPO  = Path("src/dwc_sidecar/data/schemas")
+          BASE   = "https://ns.the-dwc.com/sidecar"
+          ACTIVE = Path("src/dwc_sidecar/data/schemas")
+          FROZEN = Path("tools/publish-schemas/frozen")
           # Cloudflare's bot-protection 403s the default Python-urllib UA, so
           # send an identifiable one. Doctor's _default_fetch_url uses the
           # same string — keep them in sync.
-          UA    = "DWC-sidecar/0.1 (+https://github.com/DigitalWorkflowCompany/Metadata-Interchange-Format)"
+          UA     = "DWC-sidecar/0.1 (+https://github.com/DigitalWorkflowCompany/Metadata-Interchange-Format)"
 
-          fails = 0
-          for name in FILES:
-              local = (REPO / name).read_bytes()
-              lh    = hashlib.sha256(local).hexdigest()
-              req   = urllib.request.Request(f"{BASE}/{name}", headers={"User-Agent": UA})
+          def hosted_bytes(url):
+              req = urllib.request.Request(url, headers={"User-Agent": UA})
               try:
                   with urllib.request.urlopen(req, timeout=15) as r:
-                      hosted = r.read()
+                      return r.read()
               except urllib.error.HTTPError as e:
                   if e.code == 404:
-                      print(f"{name:30s} not yet hosted — skipping")
-                      continue
+                      return None
                   raise
+
+          targets = []  # (label, local_path, url, missing_ok)
+          for vdir in sorted(FROZEN.glob("v*")):
+              for p in sorted(vdir.glob("*.schema.json")):
+                  # frozen versions are published: a 404 is itself drift
+                  targets.append((f"{vdir.name}/{p.name}", p,
+                                  f"{BASE}/{vdir.name}/{p.name}", False))
+          for p in sorted(ACTIVE.glob("*.schema.json")):
+              url = json.loads(p.read_text()).get("$id")
+              # active version may not be deployed yet — tolerate 404
+              targets.append((f"active/{p.name}", p, url, True))
+
+          fails = 0
+          for label, path, url, missing_ok in targets:
+              local = path.read_bytes()
+              lh    = hashlib.sha256(local).hexdigest()
+              hosted = hosted_bytes(url)
+              if hosted is None:
+                  if missing_ok:
+                      print(f"{label:42s} not yet hosted — skipping")
+                      continue
+                  print(f"{label:42s} MISSING — published schema gone from {url}")
+                  fails += 1
+                  continue
               rh     = hashlib.sha256(hosted).hexdigest()
               status = "OK" if lh == rh else "DRIFT"
-              print(f"{name:30s} local={lh[:12]} hosted={rh[:12]} {status}")
+              print(f"{label:42s} local={lh[:12]} hosted={rh[:12]} {status}")
               if lh != rh:
                   fails += 1
           sys.exit(fails)

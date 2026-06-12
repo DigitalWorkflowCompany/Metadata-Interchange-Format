@@ -2,7 +2,7 @@
 import sys
 
 from . import (validate, bootstrap, batch, mhl_walker, watch, sign_example,
-                keygen, init, doctor, ale_emitter)
+                keygen, init, doctor, ale_emitter, lock, transfer, bundle)
 
 COMMANDS = {
     "init":         (init,         "One-command onboarding: key + keyring + signers + launch unit"),
@@ -13,6 +13,10 @@ COMMANDS = {
     "mhl-walk":     (mhl_walker,   "Walk a production tree, lift hashes from the MHL"),
     "watch":        (watch,        "Long-running watch-folder service"),
     "ale-export":   (ale_emitter,  "Export DWC provenance metadata to an Avid Log Exchange (ALE) file"),
+    "lock":         (lock,         "Create / co-sign an m-of-n threshold lock"),
+    "transfer":     (transfer,     "Offer / accept a two-party custody transfer"),
+    "bundle":       (bundle,       "Pack a sidecar + keyring + files into a sealed bundle"),
+    "verify":       (bundle,       "Verify a sealed bundle end-to-end (never resolves CWD files)"),
     "sign-example": (sign_example, "Regenerate demo keys and re-sign the example sidecar"),
     "keygen":       (keygen,       "Generate a new Ed25519 signing key (local/file/pkcs11)"),
 }

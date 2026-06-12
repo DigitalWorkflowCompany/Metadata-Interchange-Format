@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ns.the-dwc.com/sidecar/v0.2/head.schema.json",
+  "title": "DWC Sidecar — Chain head anchor",
+  "description": "Signed commitment to the event chain's length and tip hash, carried inside an OMC Asset's customData under domain 'dwc.sidecar.head'. Rewritten on every append. Makes truncation of the append-only log detectable: dropping events leaves the head pointing past the surviving prefix, and the head cannot be re-issued without a trusted signing key. The sig is an Ed25519 signature over the RFC 8785 (JCS) canonical bytes of the record with 'sig' removed. For rollback protection between facilities, additionally publish the head digest out-of-band (transfer manifest, e-mail, transparency log).",
+
+  "type": "object",
+  "required": ["seq", "tipHash", "ts", "sig"],
+  "additionalProperties": false,
+  "properties": {
+    "seq": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "seq of the newest event in the chain"
+    },
+    "tipHash": {
+      "type": "string",
+      "pattern": "^(sha256:[0-9a-f]{64}|sha512:[0-9a-f]{128}|blake3:[0-9a-f]{64})$",
+      "description": "hash of the newest event in the chain"
+    },
+    "ts": { "type": "string", "format": "date-time" },
+    "sig": {
+      "type": "object",
+      "required": ["alg", "kid", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "alg":   { "type": "string", "enum": ["ed25519", "ecdsa-p256", "rsa-pss"] },
+        "kid":   { "type": "string", "minLength": 1 },
+        "value": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

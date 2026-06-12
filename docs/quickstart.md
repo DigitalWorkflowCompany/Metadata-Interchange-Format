@@ -81,7 +81,7 @@ This runs a 12-check pre-flight audit against the current directory and your sig
 [PASS]  Signer config (DWC_SIGNERS) one backend reachable
 [PASS]  Signer self-test            keychain backend signed a 32-byte payload OK
 [PASS]  Plaintext private keys      no plaintext key file
-[PASS]  Hosted schema drift         local schemas match ns.the-dwc.com/sidecar/v0.1
+[PASS]  Hosted schema drift         local schemas match ns.the-dwc.com/sidecar
 [PASS]  .watch-state.json           not present (no watcher running here)
 [PASS]  Sidecar parse               no *.omc.json in CWD
 [PASS]  Key expiry window           all kids valid > 14d
@@ -124,15 +124,33 @@ dwc mhl-walk /Volumes/Mag_A001/WAR_Day01         # lift hashes from MHL; ~900 si
 dwc validate <sidecar.omc.json> --base-dir /Volumes/Mag_A001/WAR_Day01
 ```
 
-Runs all nine validator stages: OMC structure, DWC schemas, event-chain integrity, Ed25519 signatures, lock-event crosscheck, artifact file integrity, controlled-values enforcement, MHL inner consistency, and CDL consistency. Exit code is the sum of error counts.
+Runs all ten validator stages: OMC structure, DWC schemas, event-chain integrity, event↔asset binding + signed artifact commitments + chain-head anchor + transfer counter-signing, Ed25519 signatures + kid↔actor binding, lock-event crosscheck (single-signer *and* m-of-n threshold locks), artifact file integrity, controlled-values enforcement, MHL inner consistency, and CDL consistency. Exit code is the sum of error counts; pass `--require-keyring` to fail (not warn) when no keyring is present.
 
 Pass `--check-hosted` to additionally byte-compare your local schemas against the canonical copies at `ns.the-dwc.com`.
+
+## Multi-party trust
+
+Beyond single-signer sidecars, three commands cover multi-party workflows — see [`operations/transfer.md`](operations/transfer.md) for the end-to-end story:
+
+```bash
+# Require two roles to freeze an artifact
+dwc lock clip.omc.json --target <urn> --policy 2 --of dwc-color-01,dwc-post-01 --signing-kid dwc-color-01
+dwc lock cosign clip.omc.json --target <urn> --signing-kid dwc-post-01
+
+# Hand custody between facilities (receiver re-verifies before counter-signing)
+dwc transfer offer  clip.omc.json --to urn:email:io@post.com --signing-kid dwc-dit-01
+dwc transfer accept clip.omc.json --signing-kid dwc-post-01 --base-dir <receiving-root>
+
+# Seal everything into one zip and verify it with out-of-band trust
+dwc bundle clip.omc.json --base-dir /Volumes/Mag_A001 --out clip.dwcbundle.zip
+dwc verify clip.dwcbundle.zip --keyring-fingerprint sha256:<hex>
+```
 
 ## Where to go next
 
 - **Per-tool integrations** — `docs/integration/`. Silverstack 9.2+ (Lua), DaVinci Resolve 20/21 (Python), Avid Media Composer (ALE merge). Each doc has install steps + screenshots.
-- **Operations reference** — `docs/operations/`: deeper detail on [`dwc doctor`](operations/doctor.md), [`dwc watch`](operations/watch.md), and the [signer-backend matrix](operations/signer-backends.md).
+- **Operations reference** — `docs/operations/`: deeper detail on [`dwc doctor`](operations/doctor.md), [`dwc watch`](operations/watch.md), the [signer-backend matrix](operations/signer-backends.md), and the [facility-to-facility transfer workflow](operations/transfer.md).
 - **Architecture and conventions** — [`CLAUDE.md`](../CLAUDE.md): the 9-stage validator, the OMC composition strategy, hash registry, and the conventions a contributor should follow.
-- **Schemas** — <https://ns.the-dwc.com/sidecar/v0.1/>. Immutable per version.
+- **Schemas** — <https://ns.the-dwc.com/sidecar/>. Immutable per version (v0.2 active).
 
 If something doesn't work, run `dwc doctor` first — most first-time issues are environmental and the doctor's remedy text walks you out of them.

@@ -91,7 +91,11 @@ def file_digest(path, alg: str) -> str:
 
 
 def _strip(ev: dict) -> dict:
-    return {k: v for k, v in ev.items() if k not in ("hash", "sig")}
+    # 'sigs' (plural) is the threshold-lock co-signature array (vNEXT): every
+    # co-signature signs the same body, so the array itself must be outside it,
+    # exactly like the single 'sig'. Existing v0.1/v0.2 records carry no 'sigs'
+    # key, so adding it here leaves their signatures byte-for-byte unchanged.
+    return {k: v for k, v in ev.items() if k not in ("hash", "sig", "sigs")}
 
 
 def canonical_bytes(ev: dict) -> bytes:
@@ -121,6 +125,58 @@ def verify_event(ev: dict, pub: Ed25519PublicKey) -> tuple[bool, str]:
     except Exception as e:
         return False, f"signature decode error: {e}"
     return True, "ok"
+
+
+# --- format-version constants + emitter helpers ----------------------------
+# v0.2: signed events carry `artifacts` hash commitments and every emitted
+# sidecar carries a signed chain-head anchor (dwc.sidecar.head). The published
+# v0.1 schemas remain hosted and validate as before.
+SIDECAR_NS = "https://ns.the-dwc.com/sidecar/v0.2"
+
+
+def artifact_commitments(artifacts: list) -> list:
+    """The {id, hash} commitments for a signed event body — this is what turns
+    the provenance log from 'story' into 'proof': the artifact integrity hashes
+    end up under the event signature, so editing the artifacts block to match
+    substituted bytes breaks Stage 3.5 instead of passing silently."""
+    return [{"id": a["id"], "hash": dict(a["hash"])} for a in artifacts]
+
+
+def make_head(last_event: dict, signer) -> dict:
+    """Signed chain-head anchor: commits to the chain's length and tip hash so
+    truncation to a valid prefix is detectable. Rewritten on every append."""
+    head = {"seq": last_event["seq"], "tipHash": last_event["hash"],
+            "ts": last_event["ts"]}
+    head["sig"] = {
+        "alg": "ed25519", "kid": signer.kid,
+        "value": base64.b64encode(signer.sign(canonical_bytes(head))).decode(),
+    }
+    return head
+
+
+def sidecar_custom_data(artifacts: list, events: list, locks: list,
+                        head: dict | None) -> list:
+    """The customData entries every emitter writes, in canonical order."""
+    out = [
+        {"domain": "dwc.sidecar.artifacts",
+         "namespace": SIDECAR_NS,
+         "schema":    f"{SIDECAR_NS}/artifacts.schema.json",
+         "value": artifacts},
+        {"domain": "dwc.sidecar.events",
+         "namespace": SIDECAR_NS,
+         "schema":    f"{SIDECAR_NS}/events.schema.json",
+         "value": events},
+        {"domain": "dwc.sidecar.locks",
+         "namespace": SIDECAR_NS,
+         "schema":    f"{SIDECAR_NS}/locks.schema.json",
+         "value": locks},
+    ]
+    if head is not None:
+        out.append({"domain": "dwc.sidecar.head",
+                    "namespace": SIDECAR_NS,
+                    "schema":    f"{SIDECAR_NS}/head.schema.json",
+                    "value": head})
+    return out
 
 
 def load_pubkey_b64(b64: str) -> Ed25519PublicKey:

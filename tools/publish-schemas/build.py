@@ -23,14 +23,27 @@ from pathlib import Path
 HERE    = Path(__file__).resolve().parent
 REPO    = HERE.parent.parent
 SCHEMAS = REPO / "src" / "dwc_sidecar" / "data" / "schemas"
+FROZEN  = HERE / "frozen"
 DIST    = REPO / "dist"
-VERSION = "v0.1"
+VERSION = "v0.2"   # the active version, sourced from src/dwc_sidecar/data/schemas
 REPO_URL = "https://github.com/DigitalWorkflowCompany/Metadata-Interchange-Format"
 
 SCHEMA_FILES = [
     ("dwc.sidecar.artifacts", "artifacts.schema.json"),
     ("dwc.sidecar.events",    "events.schema.json"),
     ("dwc.sidecar.locks",     "locks.schema.json"),
+    ("dwc.sidecar.head",      "head.schema.json"),
+]
+
+# Published versions are immutable: frozen byte-exact copies live under
+# frozen/<version>/ and are re-published verbatim forever. Only the active
+# VERSION is built from the live schemas in src/.
+FROZEN_VERSIONS = [
+    ("v0.1", [
+        ("dwc.sidecar.artifacts", "artifacts.schema.json"),
+        ("dwc.sidecar.events",    "events.schema.json"),
+        ("dwc.sidecar.locks",     "locks.schema.json"),
+    ]),
 ]
 
 
@@ -93,16 +106,19 @@ def page(title: str, body: str) -> str:
 """
 
 
-def version_index(hashes: dict[str, str]) -> str:
+def version_index(version: str, files: list, hashes: dict[str, str],
+                  active: bool) -> str:
     rows = "".join(
         f'  <tr><td><code>{domain}</code></td>'
         f'<td><a href="{fname}">{fname}</a></td>'
         f'<td class="hash">{hashes[fname]}</td></tr>\n'
-        for domain, fname in SCHEMA_FILES
+        for domain, fname in files
     )
-    body = f"""<h1>DWC Sidecar Schema {VERSION}</h1>
+    status_note = "" if active else \
+        f'<p class="lede">Superseded by <a href="../{VERSION}/">{VERSION}</a> — kept available indefinitely.</p>'
+    body = f"""<h1>DWC Sidecar Schema {version}</h1>
 <p class="lede">JSON Schemas for the <code>dwc.sidecar.*</code> extension payloads that compose with <a href="https://movielabs.com/production-technology/omc/">MovieLabs OMC v2.8</a>.</p>
-
+{status_note}
 <h2>Schemas</h2>
 <table>
 <thead><tr><th>Domain</th><th>Schema</th><th>SHA-256</th></tr></thead>
@@ -114,21 +130,25 @@ def version_index(hashes: dict[str, str]) -> str:
 <p>DWC sidecar payloads live inside OMC's <code>customData</code> extension point. Each entry declares its <code>domain</code>, <code>namespace</code>, and <code>schema</code> URL; validators resolve against the URLs above.</p>
 <pre>{{
   "domain":    "dwc.sidecar.artifacts",
-  "namespace": "https://ns.the-dwc.com/sidecar/{VERSION}",
-  "schema":    "https://ns.the-dwc.com/sidecar/{VERSION}/artifacts.schema.json",
+  "namespace": "https://ns.the-dwc.com/sidecar/{version}",
+  "schema":    "https://ns.the-dwc.com/sidecar/{version}/artifacts.schema.json",
   "value":     [ ... ]
 }}</pre>
 
 <h2>Stability</h2>
-<p>The three schema URLs under <code>{VERSION}/</code> are <strong>immutable</strong>. Any change to their bytes is a breaking change and will be published under a new version directory (<code>v0.2/</code>). Old versions remain available indefinitely.</p>
+<p>The schema URLs under <code>{version}/</code> are <strong>immutable</strong>. Any change to their bytes is a breaking change and will be published under a new version directory. Old versions remain available indefinitely.</p>
 
 <footer>
 <p>Source: <a href="{REPO_URL}">{REPO_URL}</a> · <a href="/sidecar/">all versions</a></p>
 </footer>"""
-    return page(f"DWC Sidecar Schema {VERSION}", body)
+    return page(f"DWC Sidecar Schema {version}", body)
 
 
 def root_index() -> str:
+    frozen_rows = "".join(
+        f'  <tr><td><a href="{v}/">{v}</a></td><td class="status">superseded</td></tr>\n'
+        for v, _ in FROZEN_VERSIONS
+    )
     body = f"""<h1>DWC Schemas</h1>
 <p class="lede">Versioned JSON Schemas for the per-clip film-industry metadata sidecar format.</p>
 
@@ -137,7 +157,7 @@ def root_index() -> str:
 <thead><tr><th>Version</th><th>Status</th></tr></thead>
 <tbody>
   <tr><td><a href="{VERSION}/">{VERSION}</a></td><td class="status active">active</td></tr>
-</tbody>
+{frozen_rows}</tbody>
 </table>
 
 <h2>Policy</h2>
@@ -166,23 +186,30 @@ HEADERS = """\
 """
 
 
+def _emit_version(version: str, files: list, src_dir: Path, active: bool) -> None:
+    v_dir = DIST / "sidecar" / version
+    v_dir.mkdir(parents=True)
+    hashes: dict[str, str] = {}
+    for _, fname in files:
+        src = src_dir / fname
+        shutil.copyfile(src, v_dir / fname)
+        hashes[fname] = sha256(src)
+        print(f"  {version}/{fname:30s} {hashes[fname]}")
+    (v_dir / "index.html").write_text(version_index(version, files, hashes, active))
+
+
 def main() -> None:
     if DIST.exists():
         shutil.rmtree(DIST)
     DIST.mkdir()
 
-    v_dir = DIST / "sidecar" / VERSION
-    v_dir.mkdir(parents=True)
+    # Frozen, already-published versions: byte-exact re-publication forever.
+    for version, files in FROZEN_VERSIONS:
+        _emit_version(version, files, FROZEN / version, active=False)
 
-    hashes: dict[str, str] = {}
-    for _, fname in SCHEMA_FILES:
-        src = SCHEMAS / fname
-        dst = v_dir / fname
-        shutil.copyfile(src, dst)
-        hashes[fname] = sha256(src)
-        print(f"  {fname:30s} {hashes[fname]}")
+    # Active version from the live schemas in src/.
+    _emit_version(VERSION, SCHEMA_FILES, SCHEMAS, active=True)
 
-    (v_dir / "index.html").write_text(version_index(hashes))
     (DIST / "sidecar" / "index.html").write_text(root_index())
     (DIST / "_headers").write_text(HEADERS)
 

@@ -25,6 +25,7 @@ Create the key externally:
 import base64
 import json
 import os
+import sys
 import urllib.error
 import urllib.request
 from typing import Any, Mapping
@@ -49,6 +50,10 @@ class VaultTransitSigner(Signer):
         self._key_name  = key_name
         self._mount     = mount_point
 
+        if token is not None:
+            print("WARNING: Vault token passed inline in signers.json — config files "
+                  "get committed, backed up, and read over shoulders. Prefer the "
+                  f"`token_env` path (env var {token_env!r}).", file=sys.stderr)
         resolved_token = token if token is not None else os.environ.get(token_env)
         if not resolved_token:
             raise RuntimeError(

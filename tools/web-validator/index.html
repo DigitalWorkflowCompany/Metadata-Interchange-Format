@@ -31,7 +31,7 @@
         <summary>What to drop</summary>
         <ul>
           <li>A single <code>.omc.json</code> sidecar runs the schema, chain-integrity, and signature stages.</li>
-          <li>A <code>.zip</code> containing the sidecar plus its referenced artifacts (<code>keyring.json</code>, MHL, AMF, FDL, CDL&hellip;) runs all nine stages. Artifacts not included in the zip are reported as <em>skipped</em>, not failed.</li>
+          <li>A <code>.zip</code> containing the sidecar plus its referenced artifacts (<code>keyring.json</code>, MHL, AMF, FDL, CDL&hellip;) runs all ten stages. Artifacts not included in the zip are reported as <em>skipped</em>, not failed.</li>
           <li>Absolute production paths in the sidecar are remapped by basename to the files present in the zip, so <code>/Volumes/Mag_A001/&hellip;</code> paths work unchanged.</li>
           <li><code>blake3</code>-hashed artifacts are not supported in-browser (no WASM wheel). Use the CLI for those.</li>
         </ul>
@@ -50,7 +50,7 @@
 
   <footer>
     <p>
-      Schemas: <a href="https://ns.the-dwc.com/sidecar/v0.1/">ns.the-dwc.com/sidecar/v0.1</a>
+      Schemas: <a href="https://ns.the-dwc.com/sidecar/">ns.the-dwc.com/sidecar</a>
       &middot; Source:
       <a href="https://github.com/DigitalWorkflowCompany/Metadata-Interchange-Format">GitHub</a>
     </p>

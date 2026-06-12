@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://ns.the-dwc.com/sidecar/v0.2/artifacts.schema.json",
+  "$id": "https://ns.the-dwc.com/sidecar/v0.1/artifacts.schema.json",
   "title": "DWC Sidecar — Artifacts payload",
   "description": "Array of references to external metadata files (MHL, AMF, FDL, Resolve exports, etc.) carried inside an OMC Asset's customData under domain 'dwc.sidecar.artifacts'.",
 

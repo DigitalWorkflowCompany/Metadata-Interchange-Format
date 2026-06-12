@@ -27,6 +27,7 @@ if your HSM rejects CKM_EDDSA, check its documentation for the correct
 mechanism name and wire it through `mechanism`.
 """
 import os
+import sys
 from pathlib import Path
 
 from .base import Signer
@@ -70,6 +71,10 @@ class PKCS11Signer(Signer):
             else:
                 token = slots[slot].get_token()
 
+        if pin is not None:
+            print("WARNING: PKCS#11 PIN passed inline in signers.json — config files "
+                  "get committed, backed up, and read over shoulders. Prefer the "
+                  f"`pin_env` path (env var {pin_env!r}).", file=sys.stderr)
         resolved_pin = pin if pin is not None else os.environ.get(pin_env)
         if resolved_pin is None:
             raise RuntimeError(
@@ -112,3 +117,15 @@ class PKCS11Signer(Signer):
             self._session.close()
         except Exception:
             pass
+
+    # HSM session pools (YubiHSM 2, CloudHSM) are finite; leaking one per run
+    # eventually exhausts the pool. Context-manager use is preferred; __del__
+    # is the backstop for long-running callers that just drop the signer.
+    def __enter__(self) -> "PKCS11Signer":
+        return self
+
+    def __exit__(self, *exc) -> None:
+        self.close()
+
+    def __del__(self) -> None:
+        self.close()

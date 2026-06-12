@@ -125,8 +125,8 @@
               "customData": [
                 {
                   "domain": "dwc.sidecar.artifacts",
-                  "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                  "schema": "https://ns.the-dwc.com/sidecar/v0.1/artifacts.schema.json",
+                  "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+                  "schema": "https://ns.the-dwc.com/sidecar/v0.2/artifacts.schema.json",
                   "value": [
                     {
                       "id": "urn:uuid:af8a0001-0000-0000-0000-000000000001",
@@ -175,8 +175,8 @@
                 },
                 {
                   "domain": "dwc.sidecar.events",
-                  "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                  "schema": "https://ns.the-dwc.com/sidecar/v0.1/events.schema.json",
+                  "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+                  "schema": "https://ns.the-dwc.com/sidecar/v0.2/events.schema.json",
                   "value": [
                     {
                       "seq": 1,
@@ -192,11 +192,41 @@
                       "action": "create",
                       "target": "urn:uuid:0190a5e2-7c3f-7b4a-a1b2-3c4d5e6f7890",
                       "prevHash": null,
-                      "hash": "sha256:d6a611309c41bd522985b9f251a526f7b4dd250d720b4a7097313282112583b9",
+                      "artifacts": [
+                        {
+                          "id": "urn:uuid:af8a0001-0000-0000-0000-000000000001",
+                          "hash": {
+                            "alg": "sha256",
+                            "value": "746285cf7774d723f46593f146168426eb65b2ac169e67764fd65dcbe40e75d4"
+                          }
+                        },
+                        {
+                          "id": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
+                          "hash": {
+                            "alg": "sha256",
+                            "value": "1001e48483ab149cd547e2f6b127a343f3c39be55d6476512261da2b9aa15f83"
+                          }
+                        },
+                        {
+                          "id": "urn:uuid:af8a0003-0000-0000-0000-000000000003",
+                          "hash": {
+                            "alg": "sha256",
+                            "value": "e08a5551aefeaacd856ccc6c2762067b5d4c0531c253a63af0a47ac656a4ce0b"
+                          }
+                        },
+                        {
+                          "id": "urn:uuid:af8a0004-0000-0000-0000-000000000004",
+                          "hash": {
+                            "alg": "sha256",
+                            "value": "1099bef5325c7d63d71931c42ca6bc3ec5c3fd8eb53ad70e7d59907a7d136971"
+                          }
+                        }
+                      ],
+                      "hash": "sha256:53690a0c7d4baebc4248ac01b8f5da97d149625dbccd72ae31bddcba215e0538",
                       "sig": {
                         "alg": "ed25519",
                         "kid": "dwc-dit-01",
-                        "value": "VUILEZOBEPzI233UdDBMviULpxWiLHsq6udYHLgsT88GVvVIda8JU5n282g3d3/YoqqNoyPFG/EPF3pquseUBg=="
+                        "value": "ABKaplgjI++eGw6H3BV7f+2CmPetL1jUL+lRIeRVz0Mtrxx+luzEGKgH9yu2GcXt5dEo4AstkI1xWvBaAxh3Cg=="
                       }
                     },
                     {
@@ -212,12 +242,21 @@
                       },
                       "action": "attach",
                       "target": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
-                      "prevHash": "sha256:d6a611309c41bd522985b9f251a526f7b4dd250d720b4a7097313282112583b9",
-                      "hash": "sha256:4d7b69c551beeb22c31dc9c8dbc0822f3d9cddbb01dea86cd7e041c00cce56cf",
+                      "prevHash": "sha256:53690a0c7d4baebc4248ac01b8f5da97d149625dbccd72ae31bddcba215e0538",
+                      "artifacts": [
+                        {
+                          "id": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
+                          "hash": {
+                            "alg": "sha256",
+                            "value": "1001e48483ab149cd547e2f6b127a343f3c39be55d6476512261da2b9aa15f83"
+                          }
+                        }
+                      ],
+                      "hash": "sha256:2b09c915505be53b67726ea58dfc147f36b99f61c6f59873a6a980aef0f5c96e",
                       "sig": {
                         "alg": "ed25519",
                         "kid": "dwc-color-01",
-                        "value": "hl35ZPM5+vGcVxHXCYdAXHbF99+4MUKMaEuvz8iwPwx00vh6SfBbutJSYaUBvoSGSvLTbrXksqEnMMjWUn3KAw=="
+                        "value": "Mbdk4ULD7ZCIdTR6pVakLruLo8uCj5/3hi4OOA86DqRbPtLcF+jzMExNk4TUgvjODCMZGtmjNcotIaTZVIh5AQ=="
                       }
                     },
                     {
@@ -233,20 +272,20 @@
                       },
                       "action": "lock",
                       "target": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
-                      "prevHash": "sha256:4d7b69c551beeb22c31dc9c8dbc0822f3d9cddbb01dea86cd7e041c00cce56cf",
-                      "hash": "sha256:60aadd4ffa6e13fda98c409aeed0fb2c8378af1666a77880407d3c40224df62a",
+                      "prevHash": "sha256:2b09c915505be53b67726ea58dfc147f36b99f61c6f59873a6a980aef0f5c96e",
+                      "hash": "sha256:380a7078fce241892c3c19e915b467535fe093c2620c0c3c783dd3b615b69cdf",
                       "sig": {
                         "alg": "ed25519",
                         "kid": "dwc-post-01",
-                        "value": "OssvTstPJlXCaWkfY59e366lyRsBY8GvDnsbs7ek8xzFPt+y40S5umPeg+YhTw283hySdrxSW+7F1zvZzeaRDw=="
+                        "value": "s0Wf1jj3iYWoFGkTozgHRZK34DoJuQt/WLNWLq4BRIxmEfAL+Vi8sOkV8+yB1AzJ3iHARyQbIiBcjsm9c8r+Ag=="
                       }
                     }
                   ]
                 },
                 {
                   "domain": "dwc.sidecar.locks",
-                  "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                  "schema": "https://ns.the-dwc.com/sidecar/v0.1/locks.schema.json",
+                  "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+                  "schema": "https://ns.the-dwc.com/sidecar/v0.2/locks.schema.json",
                   "value": [
                     {
                       "target": "urn:uuid:af8a0002-0000-0000-0000-000000000002",
@@ -257,10 +296,25 @@
                       "sig": {
                         "alg": "ed25519",
                         "kid": "dwc-post-01",
-                        "value": "BASE64..."
+                        "value": "Du1ViVL21PPFq/P7VOXiWT5HTInsCwEVcDqwL01bq/LN1a4u6wP7cnci6HmZCkWiCodNqaP9TbwYpkmDUwFlCQ=="
                       }
                     }
                   ]
+                },
+                {
+                  "domain": "dwc.sidecar.head",
+                  "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+                  "schema": "https://ns.the-dwc.com/sidecar/v0.2/head.schema.json",
+                  "value": {
+                    "seq": 3,
+                    "tipHash": "sha256:380a7078fce241892c3c19e915b467535fe093c2620c0c3c783dd3b615b69cdf",
+                    "ts": "2026-04-20T18:00:00Z",
+                    "sig": {
+                      "alg": "ed25519",
+                      "kid": "dwc-post-01",
+                      "value": "u2RNwYfc7IHtfTZNHbtkIcFbITvYvAKnZWSW32GtSAjnliEQ4e/bec72gp9su70j9mF7m2se6dOhbc+iOzqWAw=="
+                    }
+                  }
                 }
               ]
             }
@@ -384,8 +438,8 @@
               "customData": [
                 {
                   "domain": "dwc.sidecar.artifacts",
-                  "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                  "schema": "https://ns.the-dwc.com/sidecar/v0.1/artifacts.schema.json",
+                  "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+                  "schema": "https://ns.the-dwc.com/sidecar/v0.2/artifacts.schema.json",
                   "value": [
                     {
                       "id": "urn:uuid:af8a0001-0000-0000-0000-000000000001",
@@ -434,8 +488,8 @@
                 },
                 {
                   "domain": "dwc.sidecar.events",
-                  "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                  "schema": "https://ns.the-dwc.com/sidecar/v0.1/events.schema.json",
+                  "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+                  "schema": "https://ns.the-dwc.com/sidecar/v0.2/events.schema.json",
                   "value": [
                     {
                       "seq": 1,
@@ -451,11 +505,41 @@
                       "action": "create",
                       "target": "urn:uuid:0190a5e2-7c3f-7b4a-a1b2-3c4d5e6f7891",
                       "prevHash": null,
-                      "hash": "sha256:3b1b4a017ef970e93b71afec9634eeff451fb14703733159e2492b24098ffef5",
+                      "artifacts": [
+                        {
+                          "id": "urn:uuid:af8a0001-0000-0000-0000-000000000001",
+                          "hash": {
+                            "alg": "sha256",
+                            "value": "746285cf7774d723f46593f146168426eb65b2ac169e67764fd65dcbe40e75d4"
+                          }
+                        },
+                        {
+                          "id": "urn:uuid:af8a0002-0000-0000-0000-00000000002b",
+                          "hash": {
+                            "alg": "sha256",
+                            "value": "852bd7d5160ee666e5bc1e9abc80e4066de2771654711068e313caa5614a8d3c"
+                          }
+                        },
+                        {
+                          "id": "urn:uuid:af8a0003-0000-0000-0000-000000000003",
+                          "hash": {
+                            "alg": "sha256",
+                            "value": "e08a5551aefeaacd856ccc6c2762067b5d4c0531c253a63af0a47ac656a4ce0b"
+                          }
+                        },
+                        {
+                          "id": "urn:uuid:af8a0004-0000-0000-0000-000000000004",
+                          "hash": {
+                            "alg": "sha256",
+                            "value": "1099bef5325c7d63d71931c42ca6bc3ec5c3fd8eb53ad70e7d59907a7d136971"
+                          }
+                        }
+                      ],
+                      "hash": "sha256:4dc1214211e63b54d885a0eca69fc06d1baeb332804dfa52f8ccf839199fdbb6",
                       "sig": {
                         "alg": "ed25519",
                         "kid": "dwc-dit-01",
-                        "value": "qCDHAhWuyJJQz98RsbpQub3JztJr+PNETAuGIPeLpG4pEbP1XZBuYrwx+/Og2r0vM/tk7vRSVCNHMhaL1qpYCg=="
+                        "value": "T+VM3Vx2xozBcz3b6SedftHqbpDEE/anv6k1cp56RX/qOiR16u6Yi8ZXxRXV3onuLDY3Hgr/VKteWJ9ocKipCw=="
                       }
                     },
                     {
@@ -471,12 +555,21 @@
                       },
                       "action": "attach",
                       "target": "urn:uuid:af8a0002-0000-0000-0000-00000000002b",
-                      "prevHash": "sha256:3b1b4a017ef970e93b71afec9634eeff451fb14703733159e2492b24098ffef5",
-                      "hash": "sha256:ad7c44cad1ee3148335b9d709d643720de312db429bad6f0d308537fab60e840",
+                      "prevHash": "sha256:4dc1214211e63b54d885a0eca69fc06d1baeb332804dfa52f8ccf839199fdbb6",
+                      "artifacts": [
+                        {
+                          "id": "urn:uuid:af8a0002-0000-0000-0000-00000000002b",
+                          "hash": {
+                            "alg": "sha256",
+                            "value": "852bd7d5160ee666e5bc1e9abc80e4066de2771654711068e313caa5614a8d3c"
+                          }
+                        }
+                      ],
+                      "hash": "sha256:835a9abb248d439d54683930fe56fd8a5c0ec6fee0e8f99018c9d0bdc974ac85",
                       "sig": {
                         "alg": "ed25519",
                         "kid": "dwc-color-01",
-                        "value": "GaBooaR6l7l1RtIhJBm4ZIJTa17+QjPFNMtY4eUjD5olBNNTIzb8I4zYQ4gBbfF27ZZBKgCGYVKGYFIgi0lDBA=="
+                        "value": "pQuypTAK2fdQ5H9kDrR5db5VjqJSevZB4sePYbRZ3uy5XriDLQaYLbUgTgdUaOe4GEJO8OQw/JETUezM924nCw=="
                       }
                     },
                     {
@@ -492,20 +585,99 @@
                       },
                       "action": "lock",
                       "target": "urn:uuid:af8a0002-0000-0000-0000-00000000002b",
-                      "prevHash": "sha256:ad7c44cad1ee3148335b9d709d643720de312db429bad6f0d308537fab60e840",
-                      "hash": "sha256:b7d0a2abc1cf84e26bde05f40816dd35b9e0bfb6f60335e7b0c4bd24984a066c",
+                      "prevHash": "sha256:835a9abb248d439d54683930fe56fd8a5c0ec6fee0e8f99018c9d0bdc974ac85",
+                      "hash": "sha256:5355740503340149fec5acbc371ae606856aa4f45c748c182e1650b6896d1a1e",
                       "sig": {
                         "alg": "ed25519",
                         "kid": "dwc-post-01",
-                        "value": "Jy8/K1k/ArJJM/aLLJAO3ZJz4MGI6LpLRqKkTFDMTRb7dKXG1YUKuf/bR9IsA3wrGcdIA+nyQzPPugEJGAAeDQ=="
+                        "value": "PFlNphOB7172THpV0+YyrONAwRtgmKe/pTvFmIXYhpzXFIhDFuu23VudwEAcNjMjmKY0RhYmMn6Mc1rCowgbAA=="
+                      }
+                    },
+                    {
+                      "seq": 4,
+                      "ts": "2026-04-20T19:00:00Z",
+                      "actor": {
+                        "id": "urn:email:dit@the-dwc.com",
+                        "role": "DIT"
+                      },
+                      "tool": {
+                        "name": "dwc transfer offer",
+                        "version": "0.6.0"
+                      },
+                      "action": "transfer",
+                      "target": "urn:uuid:0190a5e2-7c3f-7b4a-a1b2-3c4d5e6f7891",
+                      "transfer": {
+                        "to": "urn:email:post@the-dwc.com"
+                      },
+                      "prevHash": "sha256:5355740503340149fec5acbc371ae606856aa4f45c748c182e1650b6896d1a1e",
+                      "artifacts": [
+                        {
+                          "id": "urn:uuid:af8a0001-0000-0000-0000-000000000001",
+                          "hash": {
+                            "alg": "sha256",
+                            "value": "746285cf7774d723f46593f146168426eb65b2ac169e67764fd65dcbe40e75d4"
+                          }
+                        },
+                        {
+                          "id": "urn:uuid:af8a0002-0000-0000-0000-00000000002b",
+                          "hash": {
+                            "alg": "sha256",
+                            "value": "852bd7d5160ee666e5bc1e9abc80e4066de2771654711068e313caa5614a8d3c"
+                          }
+                        },
+                        {
+                          "id": "urn:uuid:af8a0003-0000-0000-0000-000000000003",
+                          "hash": {
+                            "alg": "sha256",
+                            "value": "e08a5551aefeaacd856ccc6c2762067b5d4c0531c253a63af0a47ac656a4ce0b"
+                          }
+                        },
+                        {
+                          "id": "urn:uuid:af8a0004-0000-0000-0000-000000000004",
+                          "hash": {
+                            "alg": "sha256",
+                            "value": "1099bef5325c7d63d71931c42ca6bc3ec5c3fd8eb53ad70e7d59907a7d136971"
+                          }
+                        }
+                      ],
+                      "hash": "sha256:16021ca2a2a3681c9b8a5fc477c812d1d0158226c2305c194c881fcf6a775d78",
+                      "sig": {
+                        "alg": "ed25519",
+                        "kid": "dwc-dit-01",
+                        "value": "4fOJ3m/7O8rasijumICTeZ73YdKz/NiEDIoEYOPd7aE3PBRNbz/1uoMOtf0K1V5oUdMWa1t14oLpi26FFpFBBA=="
+                      }
+                    },
+                    {
+                      "seq": 5,
+                      "ts": "2026-04-21T09:00:00Z",
+                      "actor": {
+                        "id": "urn:email:post@the-dwc.com",
+                        "role": "IO"
+                      },
+                      "tool": {
+                        "name": "dwc transfer accept",
+                        "version": "0.6.0"
+                      },
+                      "action": "accept",
+                      "target": "urn:uuid:0190a5e2-7c3f-7b4a-a1b2-3c4d5e6f7891",
+                      "transfer": {
+                        "of": "sha256:16021ca2a2a3681c9b8a5fc477c812d1d0158226c2305c194c881fcf6a775d78",
+                        "from": "urn:email:dit@the-dwc.com"
+                      },
+                      "prevHash": "sha256:16021ca2a2a3681c9b8a5fc477c812d1d0158226c2305c194c881fcf6a775d78",
+                      "hash": "sha256:ec44a9488766722582f9305b8b625928de2e0cddef25c643e5660ca30d76321a",
+                      "sig": {
+                        "alg": "ed25519",
+                        "kid": "dwc-post-01",
+                        "value": "xX5TGhfd4ngI4foXu1PqJ1t0v2VEnxFipne3ApfcX1HpxUhe29pc1BYhDepbw5/8e3NRxJ3kJwvQjYCEmeV8Cg=="
                       }
                     }
                   ]
                 },
                 {
                   "domain": "dwc.sidecar.locks",
-                  "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                  "schema": "https://ns.the-dwc.com/sidecar/v0.1/locks.schema.json",
+                  "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+                  "schema": "https://ns.the-dwc.com/sidecar/v0.2/locks.schema.json",
                   "value": [
                     {
                       "target": "urn:uuid:af8a0002-0000-0000-0000-00000000002b",
@@ -516,10 +688,25 @@
                       "sig": {
                         "alg": "ed25519",
                         "kid": "dwc-post-01",
-                        "value": "BASE64..."
+                        "value": "ZGu2oV/92VjNrZjEQ1jF7PfzKMeLudVxZXIedJEEbRtqdwgwxLD2ot28MqpICvKs1IWt32dLrZW2PcYnLKE1Aw=="
                       }
                     }
                   ]
+                },
+                {
+                  "domain": "dwc.sidecar.head",
+                  "namespace": "https://ns.the-dwc.com/sidecar/v0.2",
+                  "schema": "https://ns.the-dwc.com/sidecar/v0.2/head.schema.json",
+                  "value": {
+                    "seq": 5,
+                    "tipHash": "sha256:ec44a9488766722582f9305b8b625928de2e0cddef25c643e5660ca30d76321a",
+                    "ts": "2026-04-21T09:00:00Z",
+                    "sig": {
+                      "alg": "ed25519",
+                      "kid": "dwc-post-01",
+                      "value": "8oXqvgr2NOIjbh7NedBmjJnelFqilYZyD6Q0wAjPSCYA/NSYbotdJl49Xaokd/b6GOihS8KOD1xnSn1Ik3LnBQ=="
+                    }
+                  }
                 }
               ]
             }

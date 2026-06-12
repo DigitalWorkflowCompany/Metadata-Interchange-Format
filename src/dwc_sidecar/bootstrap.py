@@ -18,7 +18,10 @@ Example:
 import argparse, base64, json, sys, uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from .canonical import canonical_bytes, event_hash, file_digest
+from .canonical import (
+    canonical_bytes, event_hash, file_digest,
+    artifact_commitments, make_head, sidecar_custom_data,
+)
 from .signers import get_signer
 
 PRIV_KEYS = Path("keys.priv.json")
@@ -43,7 +46,7 @@ def _guess_structural(path: Path):
 
 
 def _artifact(role, kind, path: Path, base: Path, subtype=None, mhl_entry=None):
-    rel = path.relative_to(base) if path.is_absolute() else path
+    rel = path.relative_to(base) if path.is_absolute() and path.is_relative_to(base) else path
     a = {
         "id":   f"urn:uuid:{uuid.uuid4()}",
         "role": role,
@@ -65,10 +68,11 @@ def main():
     ap.add_argument("--fdl",       type=Path, help="ASC FDL framing file")
     ap.add_argument("--ale",       type=Path, help="Avid ALE export")
     ap.add_argument("--cdl",       type=Path, help="ASC CDL file (standalone colour decision)")
-    ap.add_argument("--clip-hash", default="xxh64",
+    ap.add_argument("--clip-hash", default="sha256",
                      choices=["md5","sha1","sha256","sha512","blake3","xxh64","xxh3","c4"],
-                     help="Hash alg used for the clip-integrity artifact (default xxh64 — "
-                          "matches ASC MHL v1 speed profile)")
+                     help="Hash alg used for the clip-integrity artifact (default sha256 — "
+                          "collision-resistant; xxh64 matches ASC MHL v1 speed but the "
+                          "validator warns on weak algs for integrity artifacts)")
     ap.add_argument("--actor", default="user@example.com",
                                     help="Email of the creating actor")
     ap.add_argument("--role",   default="DIT",       help="Crew role")
@@ -109,7 +113,7 @@ def main():
         "id":   f"urn:uuid:{uuid.uuid4()}",
         "role": "clip-integrity",
         "kind": "source-file",
-        "path": f"./{(clip.relative_to(base) if str(clip).startswith(str(base)) else clip).as_posix()}",
+        "path": f"./{(clip.relative_to(base) if clip.is_relative_to(base) else clip).as_posix()}",
         "hash": {"alg": clip_hash_alg, "value": file_digest(clip, clip_hash_alg)},
     }
     artifacts.append(clip_art)
@@ -140,6 +144,9 @@ def main():
         "tool":   {"name": args.tool, "version": args.tool_version},
         "action": "create",
         "target": f"urn:uuid:{clip_uuid}",
+        # The artifact integrity hashes go inside the signed body, so the
+        # signature covers the claims, not just the narrative (v0.2).
+        "artifacts": artifact_commitments(artifacts),
         "prevHash": None,
     }
     try:
@@ -149,6 +156,7 @@ def main():
     create_event["hash"] = event_hash(create_event)
     create_event["sig"]  = {"alg": "ed25519", "kid": args.signing_kid,
                              "value": base64.b64encode(signer.sign(canonical_bytes(create_event))).decode()}
+    head = make_head(create_event, signer)
 
     # --- assemble sidecar ---
     doc = {
@@ -175,20 +183,7 @@ def main():
                 "assetFC": {
                     "functionalType": "capture.ocf",
                     "functionalProperties": {
-                        "customData": [
-                            {"domain": "dwc.sidecar.artifacts",
-                             "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                             "schema":    "https://ns.the-dwc.com/sidecar/v0.1/artifacts.schema.json",
-                             "value": artifacts},
-                            {"domain": "dwc.sidecar.events",
-                             "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                             "schema":    "https://ns.the-dwc.com/sidecar/v0.1/events.schema.json",
-                             "value": [create_event]},
-                            {"domain": "dwc.sidecar.locks",
-                             "namespace": "https://ns.the-dwc.com/sidecar/v0.1",
-                             "schema":    "https://ns.the-dwc.com/sidecar/v0.1/locks.schema.json",
-                             "value": []},
-                        ]
+                        "customData": sidecar_custom_data(artifacts, [create_event], [], head)
                     }
                 },
                 "AssetSC": {
@@ -204,7 +199,7 @@ def main():
                         "fileDetails": {
                             "fileName":      clip.stem,
                             "filePath":      clip.parent.relative_to(base).as_posix() + "/"
-                                              if str(clip.parent).startswith(str(base)) else str(clip.parent) + "/",
+                                              if clip.parent.is_relative_to(base) else str(clip.parent) + "/",
                             "fileExtension": clip.suffix.lstrip("."),
                             "mediaType":     mime,
                         },

@@ -360,7 +360,7 @@ def check_hosted_schemas(fetch_url: Callable[[str], bytes]) -> CheckResult:
     """Byte-compare every local DWC schema against its hosted copy.
     Network errors are WARN (common behind a corporate proxy); actual
     fetched-but-diverged bytes are FAIL."""
-    import hashlib
+    import hashlib, json as _json
     from .validate import DWC_SCHEMAS, HOSTED_SCHEMA_BASE
 
     drifts: list[str] = []
@@ -368,7 +368,8 @@ def check_hosted_schemas(fetch_url: Callable[[str], bytes]) -> CheckResult:
     for path in DWC_SCHEMAS.values():
         local = path.read_bytes()
         lh    = hashlib.sha256(local).hexdigest()
-        url   = f"{HOSTED_SCHEMA_BASE}/{path.name}"
+        # The hosted URL is the schema's own $id — per-version directories.
+        url   = _json.loads(local).get("$id") or f"{HOSTED_SCHEMA_BASE}/{path.name}"
         try:
             remote = fetch_url(url)
         except Exception as e:

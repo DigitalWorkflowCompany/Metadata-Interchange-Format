@@ -6,21 +6,32 @@
       "validFrom": "2026-01-01T00:00:00Z",
       "validUntil": "2027-01-01T00:00:00Z",
       "revokedAt": null,
-      "revocationReason": null
+      "revocationReason": null,
+      "actor": "urn:email:dit@the-dwc.com"
     },
     "dwc-color-01": {
       "publicKey": "zA9sS2n4n1Fqqikl4FSiMxK7KDBP6wrvP8T30FV2pGA=",
       "validFrom": "2026-01-01T00:00:00Z",
       "validUntil": "2027-01-01T00:00:00Z",
       "revokedAt": null,
-      "revocationReason": null
+      "revocationReason": null,
+      "actor": "urn:email:colorist@the-dwc.com"
     },
     "dwc-post-01": {
       "publicKey": "0Eq9Wzr9nffRHkM7pDXwES3oS4lBalz53Cp+nrHZXP0=",
       "validFrom": "2026-01-01T00:00:00Z",
       "validUntil": "2027-01-01T00:00:00Z",
       "revokedAt": null,
-      "revocationReason": null
+      "revocationReason": null,
+      "actor": "urn:email:post@the-dwc.com"
+    },
+    "dwc-transcode-01": {
+      "publicKey": "ID0GK4JoTm5hvIeER8f0a9mshXwGHqNFeurOehpItpY=",
+      "validFrom": "2026-01-01T00:00:00Z",
+      "validUntil": "2027-01-01T00:00:00Z",
+      "revokedAt": null,
+      "revocationReason": null,
+      "actor": "urn:email:transcoder@the-dwc.com"
     }
   }
 }

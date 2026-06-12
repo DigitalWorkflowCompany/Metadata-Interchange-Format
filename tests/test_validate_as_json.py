@@ -33,12 +33,12 @@ def _chdir_repo_root(monkeypatch):
 
 def test_returns_expected_shape():
     report = validate_as_json(EXAMPLE_CLIP)
-    assert set(report) == {"target", "base_dir", "stages", "errors", "summary"}
+    assert set(report) == {"target", "base_dir", "stages", "errors", "warnings", "summary"}
     assert isinstance(report["stages"], list)
-    assert len(report["stages"]) == 9
+    assert len(report["stages"]) == 10
 
     stage_nums = [s["stage"] for s in report["stages"]]
-    assert stage_nums == ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    assert stage_nums == ["1", "2", "3", "3.5", "4", "5", "6", "7", "8", "9"]
 
     for s in report["stages"]:
         assert set(s) == {"stage", "title", "status", "errors", "warnings", "lines"}
@@ -66,7 +66,7 @@ def test_check_hosted_inserts_stage_2_5_slot():
     # The slot's status depends on network reachability, which is tested in CI.
     report = validate_as_json(EXAMPLE_CLIP, check_hosted=True)
     stage_nums = [s["stage"] for s in report["stages"]]
-    assert stage_nums == ["1", "2", "2.5", "3", "4", "5", "6", "7", "8", "9"]
+    assert stage_nums == ["1", "2", "2.5", "3", "3.5", "4", "5", "6", "7", "8", "9"]
 
 
 def test_parity_with_cli_main(capsys):
